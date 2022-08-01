@@ -5,8 +5,6 @@ using std::shared_ptr;
 using std::unordered_map;
 
 
-// TODO: unsure over the use of shared pointers, convenient but unnecessary?
-
 enum QuoteType {
     BID,
     ASK
@@ -30,16 +28,20 @@ public:
     double price;
     shared_ptr<Order> next_order{nullptr};
     shared_ptr<Order> prev_order{nullptr};
-    shared_ptr<Limit> parent_limit{nullptr};
 };
 
 struct Limit {
-    /* A Book level containing a list of orders at a given price-point. */
+    /*
+     * A Book level containing a list of orders at a given price-point.
+     *
+     * Orders are stored using shared pointers because they are referenced in a
+     * number of places incl. order map, limit linked lists, etc.
+     */
 public:
-    Limit(uint price):
-    price{price}{};
+    Limit(double price=0)
+        :price{price}{};
 
-    uint price{0};
+    double price;
     uint total_volume{0};
     uint size{0};
     shared_ptr<Order> head_order;
@@ -50,29 +52,27 @@ class OrderBook {
     /*
      * A directory containing levels of bids and asks respectively.
      * Limits are stored via hash maps which themselves contain a linked-list
-     * of orders.
+     * of orders. Find a limit using price and the appropriate limit map.
      *
      * Direct access to the inside of the book is provided efficient matching.
      */
-    void createOrder(QuoteType quote_type, uint size, uint remaining, double price);
+    const Limit& getLimit(double price);
+    Limit createLimit(QuoteType quote_type, double price);
+    uint64_t createOrder(QuoteType quote_type, uint size, uint remaining, double price);
     shared_ptr<Order> execute(shared_ptr<Order> order);
-    shared_ptr<Limit> createLimit(QuoteType quote_type, uint price);
-    unordered_map<uint64_t, shared_ptr<Order>> order_ids;
-    unordered_map<uint, shared_ptr<Limit>> sell_limit_map;
-    unordered_map<uint, shared_ptr<Limit>> buy_limit_map;
+    unordered_map<uint, Limit> ask_limit_map;
+    unordered_map<uint, Limit> bid_limit_map;
+    unordered_map<uint64_t, shared_ptr<Order>> order_map;
 
-    shared_ptr<Limit> lowest_sell;
-    shared_ptr<Limit> highest_buy;
-    uint num_orders;
-
-    // creating ids for orders by incrementing with each use
-    // TODO: this isn't great, should use something more robust?
+    // use price to access limit directly via limit map
+    uint lowest_ask_limit_price{0};
+    uint highest_bid_limit_price{0};
     uint64_t next_id{0};
 public:
     uint64_t sendLimitOrder(QuoteType quote_type, uint size, double price);
     uint64_t sendMarketOrder(QuoteType quote_type, uint size);
-    uint64_t sendCancelOrder(uint64_t id);
-    double getInsideBid() const;
-    double getInsideAsk() const;
-    uint size() { return num_orders; };
+    uint64_t sendCancelOrder(uint64_t order_id);
+    double getInsideBid() const { return highest_bid_limit_price; };
+    double getInsideAsk() const { return lowest_ask_limit_price; };
+    uint size() { return order_map.size(); };
 };
