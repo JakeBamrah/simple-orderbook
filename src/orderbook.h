@@ -29,6 +29,7 @@ public:
     double price;
     shared_ptr<Order> next_order{nullptr};
     shared_ptr<Order> prev_order{nullptr};
+    shared_ptr<Limit> parent_limit{nullptr};
 };
 
 /*
@@ -59,18 +60,23 @@ public:
 * Direct access to the inside of the book is provided efficient matching.
 */
 class OrderBook {
-    const Limit& getLimit(double price);
-
     /* Creates Limit and updates lowest ask / highest bid */
     shared_ptr<Limit> createBidLimit(double price);
     shared_ptr<Limit> createAskLimit(double price);
+    shared_ptr<Limit> getLimit(QuoteType quote_type, double price);
 
     /*
     * Creates an Order using timestamp as the id and adds to limit.
     * An associated Limit is created for the order if it doesn't already exist.
     */
-    uint64_t createOrder(QuoteType quote_type, uint size, uint remaining, double price);
+    const uint64_t createOrder(QuoteType quote_type, uint size, uint remaining, double price);
+
+    /*
+     * Executes an Order and cleans-up order being executed.
+     * Order is removed from Limit metadata and Order linked-list.
+     */
     shared_ptr<Order> execute(shared_ptr<Order> order);
+
     unordered_map<uint, shared_ptr<Limit>> ask_limit_map;
     unordered_map<uint, shared_ptr<Limit>> bid_limit_map;
     unordered_map<uint64_t, shared_ptr<Order>> order_map;
@@ -78,15 +84,25 @@ class OrderBook {
     // use price to access limit directly via limit map
     shared_ptr<Limit> lowest_ask_limit;
     shared_ptr<Limit> highest_bid_limit;
-    uint64_t next_id{0};
+
+    // start order ids at 1 and reserve 0 for instances where no order created
+    uint64_t next_id{1};
 public:
     /* Generates compare function based on QuoteType */
-    std::function<bool(double, double)> generateCompareCallback(QuoteType quote_type);
+    std::function<bool(double, double)> buildCompareCallback(QuoteType quote_type);
 
-    uint64_t sendLimitOrder(QuoteType quote_type, uint size, double price, std::function<bool(double, double)>);
-    uint64_t sendMarketOrder(QuoteType quote_type, uint size);
-    uint64_t sendCancelOrder(uint64_t order_id);
-    double getInsideBid() const { return 0; };
-    double getInsideAsk() const { return 0; };
-    uint size() { return order_map.size(); };
+    /*
+     * Creates an Order and corresponding limit if necessary.
+     * Attempts to fulfill incoming Order before creating limit order.
+     * Returns Order id if limit order was created and 0 if fulfilled.
+     */
+    const uint64_t sendLimitOrder(QuoteType quote_type, uint size, double price, std::function<bool(double, double)>);
+
+    const uint64_t sendMarketOrder(QuoteType quote_type, uint size);
+    const uint64_t sendCancelOrder(uint64_t order_id);
+    const double getInsideBid();
+    const double getInsideAsk();
+    const double getInsideBidSize();
+    const double getInsideAskSize();
+    const uint size() { return order_map.size(); };
 };
