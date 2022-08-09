@@ -1,3 +1,8 @@
+# export compile type dependencies produced in build system
+# we need this to provide full information on dependency type (gtest, etc.)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+# setup config for google test
 cmake_minimum_required(VERSION 3.16)
 project(matching_engine)
 
