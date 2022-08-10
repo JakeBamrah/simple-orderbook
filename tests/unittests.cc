@@ -17,6 +17,32 @@ TEST(OrderBookTest, TestOrderBookInitialize)
     ASSERT_EQ(orderbook.getInsideAsk(), 0);
 }
 
+TEST(OrderBookTest, TestOrderBookDefaultTickSize)
+{
+    OrderBook orderbook;
+
+    function<bool(double, double)> bid_compare;
+    bid_compare = orderbook.buildCompareCallback(QuoteType::BID);
+    orderbook.sendLimitOrder(QuoteType::BID, 10, 100.4564, bid_compare);
+
+    ASSERT_EQ(orderbook.size(), 1);
+    ASSERT_EQ(orderbook.getInsideBid(), 10046);
+}
+
+TEST(OrderBookTest, TestOrderBookTickSize)
+{
+    OrderBook orderbook{4};
+
+    function<bool(double, double)> bid_compare;
+    bid_compare = orderbook.buildCompareCallback(QuoteType::BID);
+    orderbook.sendLimitOrder(QuoteType::BID, 10, 100.4564, bid_compare);
+
+    std::cout << orderbook.getInsideBid();
+
+    ASSERT_EQ(orderbook.size(), 1);
+    ASSERT_EQ(orderbook.getInsideBid(), 1004564);
+}
+
 TEST(OrderBookTest, TestOrderBookBidCreate)
 {
 
@@ -95,7 +121,6 @@ TEST(OrderBookTest, TestMultipleBidAskExecute)
     bid_compare = orderbook.buildCompareCallback(QuoteType::BID);
 
     // test multiple bid to ask execution
-    orderbook = OrderBook();
     orderbook.sendLimitOrder(QuoteType::BID, 10, 100, bid_compare);
     orderbook.sendLimitOrder(QuoteType::BID, 10, 100, bid_compare);
     orderbook.sendLimitOrder(QuoteType::ASK, 20, 100, ask_compare);
@@ -115,7 +140,6 @@ TEST(OrderBookTest, TestPartialAskExecution)
     bid_compare = orderbook.buildCompareCallback(QuoteType::BID);
 
     // test partial ask execution
-    orderbook = OrderBook();
     orderbook.sendLimitOrder(QuoteType::BID, 10, 100, bid_compare);
     orderbook.sendLimitOrder(QuoteType::ASK, 20, 100, ask_compare);
 
@@ -146,3 +170,4 @@ TEST(OrderBookTest, TestPartialBidExecution)
     ASSERT_EQ(orderbook.getInsideAskSize(), 15);
     ASSERT_EQ(orderbook.getInsideBidSize(), 10);
 }
+

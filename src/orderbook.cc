@@ -2,6 +2,8 @@
 #include <memory>
 #include <chrono>
 #include <functional>
+#include <cmath>
+#include <iomanip>
 
 #include "orderbook.h"
 
@@ -9,7 +11,45 @@ using std::shared_ptr;
 using std::chrono::milliseconds;
 
 
-double OrderBook::getInsideBid()
+uint __MAX_TICK_SIZE__{8};
+
+OrderBook::OrderBook()
+    :tick_size{2}
+{
+    if (tick_size > __MAX_TICK_SIZE__)
+    {
+        throw std::invalid_argument("Tick size too large. Must be [0, 8].");
+    }
+
+    exp = pow(10, tick_size);
+}
+
+OrderBook::OrderBook(uint tick_size)
+    :tick_size(tick_size)
+{
+    if (tick_size > __MAX_TICK_SIZE__)
+    {
+        throw std::invalid_argument("Tick size too large. Must be [0, 8].");
+    }
+
+    exp = pow(10, tick_size);
+}
+
+
+std::uint64_t OrderBook::formatLevelPrice(double price)
+{
+    return (uint64_t)round(price * exp);
+}
+
+std::string OrderBook::formatDisplayPrice(double price)
+{
+    std::stringstream display_price;
+    display_price << std::setprecision(tick_size) << std::fixed << price;
+    return display_price.str();
+}
+
+
+uint64_t OrderBook::getInsideBid()
 {
     if (highest_bid_limit == nullptr)
     {
@@ -17,7 +57,6 @@ double OrderBook::getInsideBid()
     }
     return highest_bid_limit->price;
 }
-
 
 double OrderBook::getInsideBidSize()
 {
@@ -29,7 +68,7 @@ double OrderBook::getInsideBidSize()
 }
 
 
-double OrderBook::getInsideAsk()
+uint64_t OrderBook::getInsideAsk()
 {
     if (lowest_ask_limit == nullptr)
     {
@@ -37,7 +76,6 @@ double OrderBook::getInsideAsk()
     }
     return lowest_ask_limit->price;
 }
-
 
 double OrderBook::getInsideAskSize()
 {
@@ -49,7 +87,7 @@ double OrderBook::getInsideAskSize()
 }
 
 
-shared_ptr<Limit> OrderBook::createBidLimit(double price)
+shared_ptr<Limit> OrderBook::createBidLimit(uint64_t price)
 {
     shared_ptr<Limit> limit = std::make_shared<Limit>(price);
     if (highest_bid_limit == nullptr)
@@ -76,8 +114,7 @@ shared_ptr<Limit> OrderBook::createBidLimit(double price)
     return limit;
 }
 
-
-shared_ptr<Limit> OrderBook::createAskLimit(double price)
+shared_ptr<Limit> OrderBook::createAskLimit(uint64_t price)
 {
     shared_ptr<Limit> limit = std::make_shared<Limit>(price);
     if (lowest_ask_limit == nullptr)
@@ -104,8 +141,7 @@ shared_ptr<Limit> OrderBook::createAskLimit(double price)
     return limit;
 }
 
-
-shared_ptr<Limit> OrderBook::getLimit(QuoteType quote_type, double price)
+shared_ptr<Limit> OrderBook::getLimit(QuoteType quote_type, uint64_t price)
 {
     shared_ptr<Limit> limit;
     if (quote_type == QuoteType::BID)
@@ -133,7 +169,6 @@ shared_ptr<Limit> OrderBook::getLimit(QuoteType quote_type, double price)
 }
 
 
-/* Get epoch time stamp in milliseconds */
 uint64_t getTimestamp()
 {
     const auto now = std::chrono::system_clock::now().time_since_epoch();
@@ -141,8 +176,7 @@ uint64_t getTimestamp()
     return ms.count();
 }
 
-
-uint64_t OrderBook::createOrder( QuoteType quote_type, uint size, uint remaining, double price)
+uint64_t OrderBook::createOrder( QuoteType quote_type, uint size, uint remaining, uint64_t price)
 {
     // create order and add to the book order map
     uint64_t created_at = getTimestamp();
@@ -178,21 +212,6 @@ uint64_t OrderBook::createOrder( QuoteType quote_type, uint size, uint remaining
     return order_id;
 }
 
-
-std::function<bool(double, double)> OrderBook::buildCompareCallback(QuoteType quote_type)
-{
-    // default to compare function used for BID orders
-    std::function<bool(double, double)> compare;
-    compare = [=](double first, double second) { return first <= second; };
-
-    if (quote_type == QuoteType::ASK)
-    {
-        compare = [=](double first, double second) { return first >= second; };
-    }
-    return compare;
-}
-
-
 shared_ptr<Order> OrderBook::execute(shared_ptr<Order> order)
 {
     shared_ptr<Limit> parent_limit = order->parent_limit;
@@ -215,8 +234,7 @@ shared_ptr<Order> OrderBook::execute(shared_ptr<Order> order)
     return parent_limit->head_order;
 }
 
-
-uint64_t OrderBook::sendLimitOrder( QuoteType quote_type, uint size, double price, std::function<bool(double, double)> compare)
+uint64_t OrderBook::sendLimitOrder( QuoteType quote_type, uint size, double price, std::function<bool(uint64_t, uint64_t)> compare)
 {
 
     // find best priced limit—assume / default new order as a bid
@@ -230,7 +248,7 @@ uint64_t OrderBook::sendLimitOrder( QuoteType quote_type, uint size, double pric
     }
 
     // convert price to pennies
-    double format_price = price * 100;
+    uint64_t format_price = formatLevelPrice(price);
 
     // if no limit and opposing orders are found, create new limit and new order
     if (best_limit == nullptr)
@@ -293,6 +311,20 @@ uint64_t OrderBook::sendLimitOrder( QuoteType quote_type, uint size, double pric
     }
 
     return order_id;
+}
+
+
+std::function<bool(uint64_t, uint64_t)> OrderBook::buildCompareCallback(QuoteType quote_type)
+{
+    // default to compare function used for BID orders
+    std::function<bool(uint64_t, uint64_t)> compare;
+    compare = [=](uint64_t first, uint64_t second) { return first <= second; };
+
+    if (quote_type == QuoteType::ASK)
+    {
+        compare = [=](uint64_t first, uint64_t second) { return first >= second; };
+    }
+    return compare;
 }
 
 
