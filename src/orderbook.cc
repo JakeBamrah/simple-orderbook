@@ -9,7 +9,7 @@ using std::shared_ptr;
 using std::chrono::milliseconds;
 
 
-const double OrderBook::getInsideBid()
+double OrderBook::getInsideBid()
 {
     if (highest_bid_limit == nullptr)
     {
@@ -19,7 +19,7 @@ const double OrderBook::getInsideBid()
 }
 
 
-const double OrderBook::getInsideBidSize()
+double OrderBook::getInsideBidSize()
 {
     if (highest_bid_limit == nullptr || highest_bid_limit->head_order == nullptr)
     {
@@ -29,7 +29,7 @@ const double OrderBook::getInsideBidSize()
 }
 
 
-const double OrderBook::getInsideAsk()
+double OrderBook::getInsideAsk()
 {
     if (lowest_ask_limit == nullptr)
     {
@@ -39,7 +39,7 @@ const double OrderBook::getInsideAsk()
 }
 
 
-const double OrderBook::getInsideAskSize()
+double OrderBook::getInsideAskSize()
 {
     if (lowest_ask_limit == nullptr || lowest_ask_limit->head_order == nullptr)
     {
@@ -142,7 +142,7 @@ uint64_t getTimestamp()
 }
 
 
-const uint64_t OrderBook::createOrder( QuoteType quote_type, uint size, uint remaining, double price)
+uint64_t OrderBook::createOrder( QuoteType quote_type, uint size, uint remaining, double price)
 {
     // create order and add to the book order map
     uint64_t created_at = getTimestamp();
@@ -216,7 +216,7 @@ shared_ptr<Order> OrderBook::execute(shared_ptr<Order> order)
 }
 
 
-const uint64_t OrderBook::sendLimitOrder( QuoteType quote_type, uint size, double price, std::function<bool(double, double)> compare)
+uint64_t OrderBook::sendLimitOrder( QuoteType quote_type, uint size, double price, std::function<bool(double, double)> compare)
 {
 
     // find best priced limit—assume / default new order as a bid
@@ -289,6 +289,7 @@ const uint64_t OrderBook::sendLimitOrder( QuoteType quote_type, uint size, doubl
     if (remaining > 0)
     {
         uint64_t o_id = createOrder(quote_type, size, remaining, format_price);
+        return o_id;
     }
 
     return order_id;

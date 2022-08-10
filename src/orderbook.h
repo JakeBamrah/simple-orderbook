@@ -69,7 +69,7 @@ class OrderBook {
     * Creates an Order using timestamp as the id and adds to limit.
     * An associated Limit is created for the order if it doesn't already exist.
     */
-    const uint64_t createOrder(QuoteType quote_type, uint size, uint remaining, double price);
+    uint64_t createOrder(QuoteType quote_type, uint size, uint remaining, double price);
 
     /*
      * Executes an Order and cleans-up order being executed.
@@ -96,13 +96,13 @@ public:
      * Attempts to fulfill incoming Order before creating limit order.
      * Returns Order id if limit order was created and 0 if fulfilled.
      */
-    const uint64_t sendLimitOrder(QuoteType quote_type, uint size, double price, std::function<bool(double, double)>);
+    uint64_t sendLimitOrder(QuoteType quote_type, uint size, double price, std::function<bool(double, double)>);
 
-    const uint64_t sendMarketOrder(QuoteType quote_type, uint size);
-    const uint64_t sendCancelOrder(uint64_t order_id);
-    const double getInsideBid();
-    const double getInsideAsk();
-    const double getInsideBidSize();
-    const double getInsideAskSize();
-    const uint size() { return order_map.size(); };
+    uint64_t sendMarketOrder(QuoteType quote_type, uint size);
+    uint64_t sendCancelOrder(uint64_t order_id);
+    double getInsideBid();
+    double getInsideAsk();
+    double getInsideBidSize();
+    double getInsideAskSize();
+    uint size() { return order_map.size(); };
 };
