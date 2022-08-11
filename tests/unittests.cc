@@ -17,6 +17,19 @@ TEST(OrderBookTest, TestOrderBookInitialize)
     ASSERT_EQ(orderbook.getInsideAsk(), 0);
 }
 
+TEST(OrderBookTest, TestOrderBookInitException)
+{
+    EXPECT_THROW({
+        try {
+            OrderBook orderbook{9};
+        }
+        catch(std::invalid_argument err) {
+            EXPECT_STREQ("Tick size too large. Must be [0, 8].", err.what());
+            throw;
+        }
+    }, std::invalid_argument);
+}
+
 TEST(OrderBookTest, TestOrderBookDefaultTickSize)
 {
     OrderBook orderbook;

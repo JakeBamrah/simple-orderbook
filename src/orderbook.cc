@@ -16,11 +16,6 @@ uint __MAX_TICK_SIZE__{8};
 OrderBook::OrderBook()
     :tick_size{2}
 {
-    if (tick_size > __MAX_TICK_SIZE__)
-    {
-        throw std::invalid_argument("Tick size too large. Must be [0, 8].");
-    }
-
     exp = pow(10, tick_size);
 }
 
