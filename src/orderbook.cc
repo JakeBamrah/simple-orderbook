@@ -150,7 +150,8 @@ shared_ptr<Limit> OrderBook::getLimit(QuoteType quote_type, uint64_t price)
         {
             limit = createBidLimit(price);
             bid_limit_map[price] = limit;
-        } else {
+        }
+        else {
             limit = bid_limit_map.at(price);
         }
     }
@@ -161,7 +162,8 @@ shared_ptr<Limit> OrderBook::getLimit(QuoteType quote_type, uint64_t price)
         {
             limit = createAskLimit(price);
             ask_limit_map[price] = limit;
-        } else {
+        }
+        else {
             limit  = ask_limit_map.at(price);
         }
     }
@@ -198,7 +200,8 @@ uint64_t OrderBook::createOrder( QuoteType quote_type, uint size, uint remaining
     if (limit->head_order == nullptr)
     {
         limit->head_order = order;
-    } else {
+    }
+    else {
         // update pointer of existing tail order
         limit->tail_order->next_order = order;
     }
@@ -225,7 +228,8 @@ shared_ptr<Order> OrderBook::execute(shared_ptr<Order> order)
     {
         parent_limit->head_order = nullptr;
         parent_limit->tail_order = nullptr;
-    } else {
+    }
+    else {
         parent_limit->head_order = order->next_order;
     }
 
