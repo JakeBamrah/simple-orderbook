@@ -39,6 +39,9 @@ public:
 */
 struct Limit {
 public:
+    void removeOrder(shared_ptr<Order> order);
+    void addOrder(shared_ptr<Order> order);
+
     Limit(uint64_t price=0)
         :price{price}{};
 

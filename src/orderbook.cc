@@ -173,6 +173,40 @@ uint64_t getTimestamp()
     return ms.count();
 }
 
+void Limit::addOrder(shared_ptr<Order> order)
+{
+    // update head and tail of limit order linked list
+    if (head_order == nullptr)
+    {
+        head_order = order;
+    }
+    else {
+        // update pointer of existing tail order
+        tail_order->next_order = order;
+    }
+
+    tail_order = order;
+    total_volume += order->remaining;
+    size++;
+}
+
+void Limit::removeOrder(shared_ptr<Order> order)
+{
+    size--;
+    total_volume -= order->remaining;
+
+    if (head_order == tail_order)
+    {
+        head_order = nullptr;
+        tail_order = nullptr;
+    } else {
+        head_order = order->next_order;
+    }
+
+    order->next_order = nullptr;
+    order->prev_order = nullptr;
+}
+
 uint64_t OrderBook::createOrder( QuoteType quote_type, uint size, uint remaining, uint64_t price)
 {
     // create order and add to the book order map
@@ -190,20 +224,7 @@ uint64_t OrderBook::createOrder( QuoteType quote_type, uint size, uint remaining
 
     // find appropriate limit
     shared_ptr<Limit> limit = getLimit(quote_type, price);
-
-    // update head and tail of limit order linked list
-    if (limit->head_order == nullptr)
-    {
-        limit->head_order = order;
-    }
-    else {
-        // update pointer of existing tail order
-        limit->tail_order->next_order = order;
-    }
-
-    limit->tail_order = order;
-    limit->total_volume += remaining;
-    limit->size++;
+    limit->addOrder(order);
 
     return order_id;
 }
@@ -217,24 +238,13 @@ void OrderBook::removeOrder(shared_ptr<Order> order)
 {
     order_map.erase(order->id);
 }
+
 shared_ptr<Order> OrderBook::execute(shared_ptr<Limit> limit, shared_ptr<Order> order)
 {
-    limit->total_volume -= order->remaining;
-    limit->size--;
-
-    order->remaining = 0;
-
     // clean-up Order linked list pointers, this is the last order in the limit
-    if (limit->head_order == limit->tail_order)
-    {
-        limit->head_order = nullptr;
-        limit->tail_order = nullptr;
-    }
-    else {
-        limit->head_order = order->next_order;
-    }
-
     removeOrder(order);
+    limit->removeOrder(order);
+    order->remaining = 0;
 
     return limit->head_order;
 }
