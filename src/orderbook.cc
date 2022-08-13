@@ -186,7 +186,7 @@ uint64_t OrderBook::createOrder( QuoteType quote_type, uint size, uint remaining
                                     price
                                 );
 
-    order_map[order_id] = order;
+    addOrder(order);
 
     // find appropriate limit
     shared_ptr<Limit> limit = getLimit(quote_type, price);
@@ -208,6 +208,15 @@ uint64_t OrderBook::createOrder( QuoteType quote_type, uint size, uint remaining
     return order_id;
 }
 
+void OrderBook::addOrder(shared_ptr<Order> order)
+{
+    order_map[order->id] = order;
+}
+
+void OrderBook::removeOrder(shared_ptr<Order> order)
+{
+    order_map.erase(order->id);
+}
 shared_ptr<Order> OrderBook::execute(shared_ptr<Limit> limit, shared_ptr<Order> order)
 {
     limit->total_volume -= order->remaining;
@@ -225,7 +234,7 @@ shared_ptr<Order> OrderBook::execute(shared_ptr<Limit> limit, shared_ptr<Order> 
         limit->head_order = order->next_order;
     }
 
-    order_map.erase(order->id);
+    removeOrder(order);
 
     return limit->head_order;
 }

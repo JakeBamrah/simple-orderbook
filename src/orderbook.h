@@ -19,13 +19,13 @@ struct Limit;
 */
 struct Order {
 public:
-    Order(uint64_t id, uint64_t time, uint size, uint remaining, uint64_t price):
+    Order(uint64_t id, uint64_t time, uint64_t size, uint64_t remaining, uint64_t price):
     id{id}, time{time}, size{size}, remaining{remaining}, price{price}{};
 
     uint64_t id;
     uint64_t time;
     uint64_t size;
-    uint remaining;
+    uint64_t remaining;
     uint64_t price;
     shared_ptr<Order> next_order{nullptr};
     shared_ptr<Order> prev_order{nullptr};
@@ -104,6 +104,9 @@ public:
 
     /* Generates compare function based on QuoteType */
     std::function<bool(uint64_t, uint64_t)> buildCompareCallback(QuoteType quote_type);
+
+    void addOrder(shared_ptr<Order> order);
+    void removeOrder(shared_ptr<Order> order);
 
     /*
      * Creates an Order and corresponding limit if necessary.
