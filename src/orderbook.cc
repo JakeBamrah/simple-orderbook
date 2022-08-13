@@ -201,8 +201,6 @@ uint64_t OrderBook::createOrder( QuoteType quote_type, uint size, uint remaining
         limit->tail_order->next_order = order;
     }
 
-    order->parent_limit = limit;
-
     limit->tail_order = order;
     limit->total_volume += remaining;
     limit->size++;
@@ -210,27 +208,26 @@ uint64_t OrderBook::createOrder( QuoteType quote_type, uint size, uint remaining
     return order_id;
 }
 
-shared_ptr<Order> OrderBook::execute(shared_ptr<Order> order)
+shared_ptr<Order> OrderBook::execute(shared_ptr<Limit> limit, shared_ptr<Order> order)
 {
-    shared_ptr<Limit> parent_limit = order->parent_limit;
-    parent_limit->total_volume -= order->remaining;
-    parent_limit->size--;
+    limit->total_volume -= order->remaining;
+    limit->size--;
 
     order->remaining = 0;
 
     // clean-up Order linked list pointers, this is the last order in the limit
-    if (parent_limit->head_order == parent_limit->tail_order)
+    if (limit->head_order == limit->tail_order)
     {
-        parent_limit->head_order = nullptr;
-        parent_limit->tail_order = nullptr;
+        limit->head_order = nullptr;
+        limit->tail_order = nullptr;
     }
     else {
-        parent_limit->head_order = order->next_order;
+        limit->head_order = order->next_order;
     }
 
     order_map.erase(order->id);
 
-    return parent_limit->head_order;
+    return limit->head_order;
 }
 
 uint64_t OrderBook::sendLimitOrder( QuoteType quote_type, uint size, double price, std::function<bool(uint64_t, uint64_t)> compare)
@@ -271,7 +268,7 @@ uint64_t OrderBook::sendLimitOrder( QuoteType quote_type, uint size, double pric
             if (current_order->remaining <= remaining)
             {
                 remaining -= current_order->remaining;
-                current_order = execute(current_order);
+                current_order = execute(best_limit, current_order);
             }
         }
 

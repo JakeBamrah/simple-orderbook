@@ -29,7 +29,6 @@ public:
     uint64_t price;
     shared_ptr<Order> next_order{nullptr};
     shared_ptr<Order> prev_order{nullptr};
-    shared_ptr<Limit> parent_limit{nullptr};
 };
 
 /*
@@ -79,7 +78,7 @@ class OrderBook {
      * Executes an Order and cleans-up order being executed.
      * Order is removed from Limit metadata and Order linked-list.
      */
-    shared_ptr<Order> execute(shared_ptr<Order> order);
+    shared_ptr<Order> execute(shared_ptr<Limit> limit, shared_ptr<Order> order);
 
     unordered_map<uint, shared_ptr<Limit>> ask_limit_map;
     unordered_map<uint, shared_ptr<Limit>> bid_limit_map;
