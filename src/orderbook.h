@@ -85,6 +85,7 @@ class OrderBook {
 
     unordered_map<uint, shared_ptr<Limit>> ask_limit_map;
     unordered_map<uint, shared_ptr<Limit>> bid_limit_map;
+
     unordered_map<uint64_t, shared_ptr<Order>> order_map;
 
     /* Use price to access limit directly via limit map */
@@ -121,7 +122,7 @@ public:
      * Attempts to fulfill incoming Order before creating limit order.
      * Returns Order id if limit order was created and 0 if fulfilled.
      */
-    uint64_t addLimitOrder(shared_ptr<Order> order, std::function<bool(uint64_t, uint64_t)> compare);
+    void addLimitOrder(Order& order, std::function<bool(uint64_t, uint64_t)> compare);
 
     uint64_t sendMarketOrder(QuoteType quote_type, uint size);
     uint64_t sendCancelOrder(uint64_t order_id);
