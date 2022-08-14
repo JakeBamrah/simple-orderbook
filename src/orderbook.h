@@ -78,16 +78,10 @@ class OrderBook {
     shared_ptr<Limit> getLimit(QuoteType quote_type, uint64_t price);
 
     /*
-    * Creates an Order using timestamp as the id and adds to limit.
-    * An associated Limit is created for the order if it doesn't already exist.
-    */
-    uint64_t createOrder(QuoteType quote_type, uint size, uint remaining, uint64_t price);
-
-    /*
      * Executes an Order and cleans-up order being executed.
      * Order is removed from Limit metadata and Order linked-list.
      */
-    shared_ptr<Order> execute(shared_ptr<Limit> limit, shared_ptr<Order> order);
+    shared_ptr<Order> execute(shared_ptr<Order> order);
 
     unordered_map<uint, shared_ptr<Limit>> ask_limit_map;
     unordered_map<uint, shared_ptr<Limit>> bid_limit_map;
@@ -114,7 +108,12 @@ public:
     /* Generates compare function based on QuoteType */
     std::function<bool(uint64_t, uint64_t)> buildCompareCallback(QuoteType quote_type);
 
-    void addOrder(shared_ptr<Order> order);
+    /*
+    * Creates an Order using timestamp as the id and adds to limit.
+    * An associated Limit is created for the order if it doesn't already exist.
+    */
+    Order createOrder(QuoteType quote_type, uint64_t size, uint64_t remaining, double price);
+    uint64_t addOrder(shared_ptr<Order> order);
     void removeOrder(shared_ptr<Order> order);
 
     /*
@@ -122,7 +121,7 @@ public:
      * Attempts to fulfill incoming Order before creating limit order.
      * Returns Order id if limit order was created and 0 if fulfilled.
      */
-    uint64_t sendLimitOrder(QuoteType quote_type, uint size, double price, std::function<bool(uint64_t, uint64_t)>);
+    uint64_t addLimitOrder(shared_ptr<Order> order, std::function<bool(uint64_t, uint64_t)> compare);
 
     uint64_t sendMarketOrder(QuoteType quote_type, uint size);
     uint64_t sendCancelOrder(uint64_t order_id);
