@@ -11,6 +11,73 @@ using std::shared_ptr;
 using std::chrono::milliseconds;
 
 
+Order::Order(uint64_t id, uint64_t created_at, QuoteType quote_type, uint64_t size, uint64_t remaining, uint64_t price)
+    :id{id},
+    created_at{created_at},
+    quote_type{quote_type},
+    size{size},
+    remaining{remaining},
+    price{price}
+{}
+
+Order::Order(Order& o)
+    :id{o.id},
+    created_at{o.created_at},
+    quote_type{o.quote_type},
+    size{o.size},
+    remaining{o.remaining},
+    price{o.price}
+{}
+
+Order& Order::operator=(Order& o)
+{
+    id = o.id;
+    created_at = o.created_at;
+    quote_type = o.quote_type;
+    size = o.size;
+    remaining = o.remaining;
+    price = o.price;
+    next_order = o.next_order;
+    prev_order = o.prev_order;
+
+    o.id = o.created_at = o.size = o.remaining = o.price = 0;
+    o.next_order = o.prev_order = nullptr;
+
+    return *this;
+}
+
+Order::Order(Order&& o)
+    :id{o.id},
+    created_at{o.created_at},
+    quote_type{o.quote_type},
+    size{o.size},
+    remaining{o.remaining},
+    price{o.price}
+{
+    o.id = o.created_at = o.size = o.remaining = o.price = 0;
+    o.next_order = o.prev_order = nullptr;
+}
+
+Order& Order::operator=(Order&& o)
+{
+    if (this != &o)
+    {
+        id = o.id;
+        created_at = o.created_at;
+        quote_type = o.quote_type;
+        size = o.size;
+        remaining = o.remaining;
+        price = o.price;
+        next_order = o.next_order;
+        prev_order = o.prev_order;
+
+        o.id = o.created_at = o.size = o.remaining = o.price = 0;
+        o.next_order = o.prev_order = nullptr;
+    }
+
+    return *this;
+}
+
 uint __MAX_TICK_SIZE__{8};
 
 OrderBook::OrderBook()

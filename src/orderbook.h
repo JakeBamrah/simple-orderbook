@@ -19,11 +19,17 @@ struct Limit;
 */
 struct Order {
 public:
-    Order(uint64_t id, uint64_t created_at, uint64_t size, uint64_t remaining, uint64_t price):
-    id{id}, created_at{created_at}, size{size}, remaining{remaining}, price{price}{};
+    Order(uint64_t id, uint64_t created_at, QuoteType quote_type, uint64_t size, uint64_t remaining, uint64_t price);
+
+    Order(Order& o);
+    Order& operator=(Order& o);
+
+    Order(Order&& o);
+    Order& operator=(Order&& o);
 
     uint64_t id;
     uint64_t created_at;
+    QuoteType quote_type;
     uint64_t size;
     uint64_t remaining;
     uint64_t price;
