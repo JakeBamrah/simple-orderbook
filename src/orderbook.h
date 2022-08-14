@@ -27,6 +27,8 @@ public:
     Order(Order&& o);
     Order& operator=(Order&& o);
 
+    ~Order();
+
     uint64_t id;
     uint64_t created_at;
     QuoteType quote_type;
@@ -43,13 +45,15 @@ public:
 * Orders are stored using shared pointers because they are referenced in a
 * number of places incl. order map, limit linked lists, etc.
 */
-struct Limit {
+class Limit {
 public:
+    Limit(uint64_t price=0)
+        :price{price}{};
+
     void removeOrder(shared_ptr<Order> order);
     void addOrder(shared_ptr<Order> order);
 
-    Limit(uint64_t price=0)
-        :price{price}{};
+    ~Limit();
 
     uint64_t price;
     uint total_volume{0};

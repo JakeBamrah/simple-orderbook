@@ -78,6 +78,38 @@ Order& Order::operator=(Order&& o)
     return *this;
 }
 
+Order::~Order()
+{
+    id = created_at = size = remaining = price = 0;
+    next_order = prev_order = nullptr;
+}
+
+Limit::~Limit()
+{
+    price = total_volume = size = 0;
+    head_order = tail_order = nullptr;
+    next = nullptr;
+}
+
+void Limit::addOrder(shared_ptr<Order> order)
+{
+    // update head and tail of limit order linked list
+    if (head_order == nullptr)
+    {
+        head_order = order;
+    }
+    else {
+        // update pointer of existing tail order
+        tail_order->next_order = order;
+    }
+
+    tail_order = order;
+    total_volume += order->remaining;
+    size++;
+    return;
+}
+
+
 uint __MAX_TICK_SIZE__{8};
 
 OrderBook::OrderBook()
@@ -240,23 +272,6 @@ uint64_t getTimestamp()
     return ms.count();
 }
 
-void Limit::addOrder(shared_ptr<Order> order)
-{
-    // update head and tail of limit order linked list
-    if (head_order == nullptr)
-    {
-        head_order = order;
-    }
-    else {
-        // update pointer of existing tail order
-        tail_order->next_order = order;
-    }
-
-    tail_order = order;
-    total_volume += order->remaining;
-    size++;
-}
-
 void Limit::removeOrder(shared_ptr<Order> order)
 {
     size--;
@@ -269,9 +284,7 @@ void Limit::removeOrder(shared_ptr<Order> order)
     } else {
         head_order = order->next_order;
     }
-
-    order->next_order = nullptr;
-    order->prev_order = nullptr;
+    return;
 }
 
 Order OrderBook::createOrder(QuoteType quote_type, uint64_t size, uint64_t remaining, double price)
@@ -297,10 +310,9 @@ uint64_t OrderBook::addOrder(std::shared_ptr<Order> order)
 {
     order_map[order->id] = order;
 
-    // find appropriate limit
+    // delete order from limit linked list
     shared_ptr<Limit> limit = getLimit(order->quote_type, order->price);
     limit->addOrder(order);
-
     return order->id;
 }
 
@@ -309,9 +321,6 @@ void OrderBook::removeOrder(shared_ptr<Order> order)
     shared_ptr<Limit> limit = getLimit(order->quote_type, order->price);
     order_map.erase(order->id);
     limit->removeOrder(order);
-
-    // TODO: release Order resources
-    order->remaining = 0;
     return;
 }
 
