@@ -2,67 +2,12 @@
 #include <unordered_map>
 #include <functional>
 
+#include "order.h"
+#include "limit.h"
+
+
 using std::shared_ptr;
 using std::unordered_map;
-
-
-enum QuoteType {
-    BID,
-    ASK
-};
-
-struct Limit;
-
-/*
-* Contains all the information of a simple order.
-* Each Order is represented as a node within a linked list.
-*/
-struct Order {
-public:
-    Order(uint64_t id, uint64_t created_at, QuoteType quote_type, uint64_t size, uint64_t remaining, uint64_t price);
-
-    Order(Order& o);
-    Order& operator=(Order& o);
-
-    Order(Order&& o);
-    Order& operator=(Order&& o);
-
-    ~Order();
-
-    uint64_t id;
-    uint64_t created_at;
-    QuoteType quote_type;
-    uint64_t size;
-    uint64_t remaining;
-    uint64_t price;
-    shared_ptr<Order> next_order{nullptr};
-    shared_ptr<Order> prev_order{nullptr};
-};
-
-/*
-* A Book level containing a list of orders at a given price-point.
-*
-* Orders are stored using shared pointers because they are referenced in a
-* number of places incl. order map, limit linked lists, etc.
-*/
-class Limit {
-public:
-    Limit(uint64_t price=0)
-        :price{price}{};
-
-    void removeOrder(shared_ptr<Order> order);
-    void addOrder(shared_ptr<Order> order);
-
-    ~Limit();
-
-    uint64_t price;
-    uint total_volume{0};
-    uint size{0};
-    shared_ptr<Order> head_order{nullptr};
-    shared_ptr<Order> tail_order{nullptr};
-    shared_ptr<Limit> next{nullptr};
-};
-
 
 /*
 * A directory containing levels of bids and asks respectively.

@@ -6,111 +6,15 @@
 #include <iomanip>
 
 #include "orderbook.h"
+#include "order.cc"
+#include "limit.cc"
+
 
 using std::shared_ptr;
 using std::chrono::milliseconds;
 
 
-Order::Order(uint64_t id, uint64_t created_at, QuoteType quote_type, uint64_t size, uint64_t remaining, uint64_t price)
-    :id{id},
-    created_at{created_at},
-    quote_type{quote_type},
-    size{size},
-    remaining{remaining},
-    price{price}
-{}
-
-Order::Order(Order& o)
-    :id{o.id},
-    created_at{o.created_at},
-    quote_type{o.quote_type},
-    size{o.size},
-    remaining{o.remaining},
-    price{o.price}
-{}
-
-Order& Order::operator=(Order& o)
-{
-    id = o.id;
-    created_at = o.created_at;
-    quote_type = o.quote_type;
-    size = o.size;
-    remaining = o.remaining;
-    price = o.price;
-    next_order = o.next_order;
-    prev_order = o.prev_order;
-
-    o.id = o.created_at = o.size = o.remaining = o.price = 0;
-    o.next_order = o.prev_order = nullptr;
-
-    return *this;
-}
-
-Order::Order(Order&& o)
-    :id{o.id},
-    created_at{o.created_at},
-    quote_type{o.quote_type},
-    size{o.size},
-    remaining{o.remaining},
-    price{o.price}
-{
-    o.id = o.created_at = o.size = o.remaining = o.price = 0;
-    o.next_order = o.prev_order = nullptr;
-}
-
-Order& Order::operator=(Order&& o)
-{
-    if (this != &o)
-    {
-        id = o.id;
-        created_at = o.created_at;
-        quote_type = o.quote_type;
-        size = o.size;
-        remaining = o.remaining;
-        price = o.price;
-        next_order = o.next_order;
-        prev_order = o.prev_order;
-
-        o.id = o.created_at = o.size = o.remaining = o.price = 0;
-        o.next_order = o.prev_order = nullptr;
-    }
-
-    return *this;
-}
-
-Order::~Order()
-{
-    id = created_at = size = remaining = price = 0;
-    next_order = prev_order = nullptr;
-}
-
-Limit::~Limit()
-{
-    price = total_volume = size = 0;
-    head_order = tail_order = nullptr;
-    next = nullptr;
-}
-
-void Limit::addOrder(shared_ptr<Order> order)
-{
-    // update head and tail of limit order linked list
-    if (head_order == nullptr)
-    {
-        head_order = order;
-    }
-    else {
-        // update pointer of existing tail order
-        tail_order->next_order = order;
-    }
-
-    tail_order = order;
-    total_volume += order->remaining;
-    size++;
-    return;
-}
-
-
-uint __MAX_TICK_SIZE__{8};
+uint8_t __MAX_TICK_SIZE__{8};
 
 OrderBook::OrderBook()
     :tick_size{2}
@@ -270,21 +174,6 @@ uint64_t getTimestamp()
     const auto now = std::chrono::system_clock::now().time_since_epoch();
     milliseconds ms = std::chrono::duration_cast<milliseconds>(now);
     return ms.count();
-}
-
-void Limit::removeOrder(shared_ptr<Order> order)
-{
-    size--;
-    total_volume -= order->remaining;
-
-    if (head_order == tail_order)
-    {
-        head_order = nullptr;
-        tail_order = nullptr;
-    } else {
-        head_order = order->next_order;
-    }
-    return;
 }
 
 Order OrderBook::createOrder(QuoteType quote_type, uint64_t size, uint64_t remaining, double price)
