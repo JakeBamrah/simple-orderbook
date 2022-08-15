@@ -6,7 +6,6 @@
 
 using std::function;
 
-
 // TODO: write market order and cancel order tests
 
 TEST(OrderBookTest, TestOrderBookInitialize)
@@ -36,7 +35,9 @@ TEST(OrderBookTest, TestOrderBookDefaultTickSize)
 
     function<bool(double, double)> bid_compare;
     bid_compare = orderbook.buildCompareCallback(QuoteType::BID);
-    orderbook.sendLimitOrder(QuoteType::BID, 10, 100.4564, bid_compare);
+
+    Order o1 = orderbook.createOrder(QuoteType::BID, 10, 10, 100.4564);
+    orderbook.addLimitOrder(o1, bid_compare);
 
     ASSERT_EQ(orderbook.size(), 1);
     ASSERT_EQ(orderbook.getInsideBid(), 10046);
@@ -48,7 +49,9 @@ TEST(OrderBookTest, TestOrderBookTickSize)
 
     function<bool(double, double)> bid_compare;
     bid_compare = orderbook.buildCompareCallback(QuoteType::BID);
-    orderbook.sendLimitOrder(QuoteType::BID, 10, 100.4564, bid_compare);
+
+    Order o1 = orderbook.createOrder(QuoteType::BID, 10, 10, 100.4564);
+    orderbook.addLimitOrder(o1, bid_compare);
 
     std::cout << orderbook.getInsideBid();
 
@@ -58,15 +61,18 @@ TEST(OrderBookTest, TestOrderBookTickSize)
 
 TEST(OrderBookTest, TestOrderBookBidCreate)
 {
-
     OrderBook orderbook;
 
     function<bool(double, double)> bid_compare;
     bid_compare = orderbook.buildCompareCallback(QuoteType::BID);
 
-    orderbook.sendLimitOrder(QuoteType::BID, 1, 80, bid_compare);
-    orderbook.sendLimitOrder(QuoteType::BID, 1, 90, bid_compare);
-    orderbook.sendLimitOrder(QuoteType::BID, 1, 100, bid_compare);
+    Order o1 = orderbook.createOrder(QuoteType::BID, 1, 1, 80);
+    Order o2 = orderbook.createOrder(QuoteType::BID, 1, 1, 90);
+    Order o3 = orderbook.createOrder(QuoteType::BID, 1, 1, 100);
+
+    orderbook.addLimitOrder(o1, bid_compare);
+    orderbook.addLimitOrder(o2, bid_compare);
+    orderbook.addLimitOrder(o3, bid_compare);
 
     ASSERT_TRUE(orderbook.size() == 3);
     ASSERT_TRUE(orderbook.getInsideBid() == 10000);
@@ -79,9 +85,13 @@ TEST(OrderBookTest, TestOrderBookAskCreate)
     function<bool(double, double)> ask_compare;
     ask_compare = orderbook.buildCompareCallback(QuoteType::ASK);
 
-    orderbook.sendLimitOrder(QuoteType::ASK, 1, 80, ask_compare);
-    orderbook.sendLimitOrder(QuoteType::ASK, 1, 90, ask_compare);
-    orderbook.sendLimitOrder(QuoteType::ASK, 1, 100, ask_compare);
+    Order o1 = orderbook.createOrder(QuoteType::ASK, 1, 1, 80);
+    Order o2 = orderbook.createOrder(QuoteType::ASK, 1, 1, 90);
+    Order o3 = orderbook.createOrder(QuoteType::ASK, 1, 1, 100);
+
+    orderbook.addLimitOrder(o1, ask_compare);
+    orderbook.addLimitOrder(o2, ask_compare);
+    orderbook.addLimitOrder(o3, ask_compare);
 
     ASSERT_TRUE(orderbook.size() == 3);
     ASSERT_TRUE(orderbook.getInsideAsk() == 8000);
@@ -96,9 +106,12 @@ TEST(OrderBookTest, TestSingleBidAskExecute)
     ask_compare = orderbook.buildCompareCallback(QuoteType::ASK);
     bid_compare = orderbook.buildCompareCallback(QuoteType::BID);
 
+    Order o1 = orderbook.createOrder(QuoteType::ASK, 10, 10, 100);
+    Order o2 = orderbook.createOrder(QuoteType::BID, 10, 10, 100);
+
     // test single bid-ask execution
-    orderbook.sendLimitOrder(QuoteType::BID, 10, 100, bid_compare);
-    orderbook.sendLimitOrder(QuoteType::ASK, 10, 100, ask_compare);
+    orderbook.addLimitOrder(o1, ask_compare);
+    orderbook.addLimitOrder(o2, bid_compare);
 
     ASSERT_TRUE(orderbook.size() == 0);
     ASSERT_TRUE(orderbook.getInsideBid() == 0);
@@ -114,10 +127,14 @@ TEST(OrderBookTest, TestMultipleAskBidExecute)
     ask_compare = orderbook.buildCompareCallback(QuoteType::ASK);
     bid_compare = orderbook.buildCompareCallback(QuoteType::BID);
 
+    Order o1 = orderbook.createOrder(QuoteType::BID, 20, 20, 100);
+    Order o2 = orderbook.createOrder(QuoteType::ASK, 10, 10, 100);
+    Order o3 = orderbook.createOrder(QuoteType::ASK, 10, 10, 100);
+
     // test multiple ask to bid execution
-    orderbook.sendLimitOrder(QuoteType::BID, 20, 100, bid_compare);
-    orderbook.sendLimitOrder(QuoteType::ASK, 10, 100, ask_compare);
-    orderbook.sendLimitOrder(QuoteType::ASK, 10, 100, ask_compare);
+    orderbook.addLimitOrder(o1, bid_compare);
+    orderbook.addLimitOrder(o2, ask_compare);
+    orderbook.addLimitOrder(o3, ask_compare);
 
     ASSERT_TRUE(orderbook.size() == 0);
     ASSERT_TRUE(orderbook.getInsideBid() == 0);
@@ -133,10 +150,14 @@ TEST(OrderBookTest, TestMultipleBidAskExecute)
     ask_compare = orderbook.buildCompareCallback(QuoteType::ASK);
     bid_compare = orderbook.buildCompareCallback(QuoteType::BID);
 
+    Order o1 = orderbook.createOrder(QuoteType::ASK, 20, 20, 100);
+    Order o2 = orderbook.createOrder(QuoteType::BID, 10, 10, 100);
+    Order o3 = orderbook.createOrder(QuoteType::BID, 10, 10, 100);
+
     // test multiple bid to ask execution
-    orderbook.sendLimitOrder(QuoteType::BID, 10, 100, bid_compare);
-    orderbook.sendLimitOrder(QuoteType::BID, 10, 100, bid_compare);
-    orderbook.sendLimitOrder(QuoteType::ASK, 20, 100, ask_compare);
+    orderbook.addLimitOrder(o1, ask_compare);
+    orderbook.addLimitOrder(o2, bid_compare);
+    orderbook.addLimitOrder(o3, bid_compare);
 
     ASSERT_TRUE(orderbook.size() == 0);
     ASSERT_TRUE(orderbook.getInsideBid() == 0);
@@ -152,9 +173,12 @@ TEST(OrderBookTest, TestPartialAskExecution)
     ask_compare = orderbook.buildCompareCallback(QuoteType::ASK);
     bid_compare = orderbook.buildCompareCallback(QuoteType::BID);
 
+    Order o1 = orderbook.createOrder(QuoteType::ASK, 20, 20, 100);
+    Order o2 = orderbook.createOrder(QuoteType::BID, 10, 10, 100);
+
     // test partial ask execution
-    orderbook.sendLimitOrder(QuoteType::BID, 10, 100, bid_compare);
-    orderbook.sendLimitOrder(QuoteType::ASK, 20, 100, ask_compare);
+    orderbook.addLimitOrder(o1, ask_compare);
+    orderbook.addLimitOrder(o2, bid_compare);
 
     ASSERT_EQ(orderbook.size(), 1);
     ASSERT_EQ(orderbook.getInsideBid(), 0);
@@ -171,11 +195,16 @@ TEST(OrderBookTest, TestPartialBidExecution)
     ask_compare = orderbook.buildCompareCallback(QuoteType::ASK);
     bid_compare = orderbook.buildCompareCallback(QuoteType::BID);
 
+    Order o1 = orderbook.createOrder(QuoteType::BID, 10, 10, 80);
+    Order o2 = orderbook.createOrder(QuoteType::BID, 10, 10, 90);
+    Order o3 = orderbook.createOrder(QuoteType::BID, 15, 15, 90);
+    Order o4 = orderbook.createOrder(QuoteType::ASK, 40, 40, 90);
+
     // test partial bid execution
-    orderbook.sendLimitOrder(QuoteType::BID, 10, 80, bid_compare);
-    orderbook.sendLimitOrder(QuoteType::BID, 10, 90, bid_compare);
-    orderbook.sendLimitOrder(QuoteType::BID, 15, 90, bid_compare);
-    orderbook.sendLimitOrder(QuoteType::ASK, 40, 90, ask_compare);
+    orderbook.addLimitOrder(o1, bid_compare);
+    orderbook.addLimitOrder(o2, bid_compare);
+    orderbook.addLimitOrder(o3, bid_compare);
+    orderbook.addLimitOrder(o4, ask_compare);
 
     ASSERT_EQ(orderbook.size(), 2);
     ASSERT_EQ(orderbook.getInsideBid(), 8000);

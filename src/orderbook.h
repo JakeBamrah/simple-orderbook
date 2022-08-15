@@ -2,57 +2,12 @@
 #include <unordered_map>
 #include <functional>
 
+#include "order.h"
+#include "limit.h"
+
+
 using std::shared_ptr;
 using std::unordered_map;
-
-
-enum QuoteType {
-    BID,
-    ASK
-};
-
-struct Limit;
-
-/*
-* Contains all the information of a simple order.
-* Each Order is represented as a node within a linked list.
-*/
-struct Order {
-public:
-    Order(uint64_t id, uint64_t created_at, uint64_t size, uint64_t remaining, uint64_t price):
-    id{id}, created_at{created_at}, size{size}, remaining{remaining}, price{price}{};
-
-    uint64_t id;
-    uint64_t created_at;
-    uint64_t size;
-    uint64_t remaining;
-    uint64_t price;
-    shared_ptr<Order> next_order{nullptr};
-    shared_ptr<Order> prev_order{nullptr};
-};
-
-/*
-* A Book level containing a list of orders at a given price-point.
-*
-* Orders are stored using shared pointers because they are referenced in a
-* number of places incl. order map, limit linked lists, etc.
-*/
-struct Limit {
-public:
-    void removeOrder(shared_ptr<Order> order);
-    void addOrder(shared_ptr<Order> order);
-
-    Limit(uint64_t price=0)
-        :price{price}{};
-
-    uint64_t price;
-    uint total_volume{0};
-    uint size{0};
-    shared_ptr<Order> head_order{nullptr};
-    shared_ptr<Order> tail_order{nullptr};
-    shared_ptr<Limit> next{nullptr};
-};
-
 
 /*
 * A directory containing levels of bids and asks respectively.
@@ -72,19 +27,14 @@ class OrderBook {
     shared_ptr<Limit> getLimit(QuoteType quote_type, uint64_t price);
 
     /*
-    * Creates an Order using timestamp as the id and adds to limit.
-    * An associated Limit is created for the order if it doesn't already exist.
-    */
-    uint64_t createOrder(QuoteType quote_type, uint size, uint remaining, uint64_t price);
-
-    /*
      * Executes an Order and cleans-up order being executed.
      * Order is removed from Limit metadata and Order linked-list.
      */
-    shared_ptr<Order> execute(shared_ptr<Limit> limit, shared_ptr<Order> order);
+    shared_ptr<Order> execute(shared_ptr<Order> order);
 
     unordered_map<uint, shared_ptr<Limit>> ask_limit_map;
     unordered_map<uint, shared_ptr<Limit>> bid_limit_map;
+
     unordered_map<uint64_t, shared_ptr<Order>> order_map;
 
     /* Use price to access limit directly via limit map */
@@ -108,7 +58,12 @@ public:
     /* Generates compare function based on QuoteType */
     std::function<bool(uint64_t, uint64_t)> buildCompareCallback(QuoteType quote_type);
 
-    void addOrder(shared_ptr<Order> order);
+    /*
+    * Creates an Order using timestamp as the id and adds to limit.
+    * An associated Limit is created for the order if it doesn't already exist.
+    */
+    Order createOrder(QuoteType quote_type, uint64_t size, uint64_t remaining, double price);
+    uint64_t addOrder(shared_ptr<Order> order);
     void removeOrder(shared_ptr<Order> order);
 
     /*
@@ -116,7 +71,7 @@ public:
      * Attempts to fulfill incoming Order before creating limit order.
      * Returns Order id if limit order was created and 0 if fulfilled.
      */
-    uint64_t sendLimitOrder(QuoteType quote_type, uint size, double price, std::function<bool(uint64_t, uint64_t)>);
+    void addLimitOrder(Order& order, std::function<bool(uint64_t, uint64_t)> compare);
 
     uint64_t sendMarketOrder(QuoteType quote_type, uint size);
     uint64_t sendCancelOrder(uint64_t order_id);

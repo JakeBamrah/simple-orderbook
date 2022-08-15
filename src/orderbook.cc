@@ -6,12 +6,15 @@
 #include <iomanip>
 
 #include "orderbook.h"
+#include "order.cc"
+#include "limit.cc"
+
 
 using std::shared_ptr;
 using std::chrono::milliseconds;
 
 
-uint __MAX_TICK_SIZE__{8};
+uint8_t __MAX_TICK_SIZE__{8};
 
 OrderBook::OrderBook()
     :tick_size{2}
@@ -173,159 +176,122 @@ uint64_t getTimestamp()
     return ms.count();
 }
 
-void Limit::addOrder(shared_ptr<Order> order)
+Order OrderBook::createOrder(QuoteType quote_type, uint64_t size, uint64_t remaining, double price)
 {
-    // update head and tail of limit order linked list
-    if (head_order == nullptr)
-    {
-        head_order = order;
-    }
-    else {
-        // update pointer of existing tail order
-        tail_order->next_order = order;
-    }
+    // convert price from tick units to pennies
+    uint64_t format_price = formatLevelPrice(price);
 
-    tail_order = order;
-    total_volume += order->remaining;
-    size++;
-}
-
-void Limit::removeOrder(shared_ptr<Order> order)
-{
-    size--;
-    total_volume -= order->remaining;
-
-    if (head_order == tail_order)
-    {
-        head_order = nullptr;
-        tail_order = nullptr;
-    } else {
-        head_order = order->next_order;
-    }
-
-    order->next_order = nullptr;
-    order->prev_order = nullptr;
-}
-
-uint64_t OrderBook::createOrder( QuoteType quote_type, uint size, uint remaining, uint64_t price)
-{
     // create order and add to the book order map
     uint64_t created_at = getTimestamp();
     uint64_t order_id = next_id++;
-    shared_ptr<Order> order = std::make_shared<Order>(
-                                    order_id,
-                                    created_at,
-                                    size,
-                                    remaining,
-                                    price
-                                );
-
-    addOrder(order);
-
-    // find appropriate limit
-    shared_ptr<Limit> limit = getLimit(quote_type, price);
-    limit->addOrder(order);
-
-    return order_id;
+    Order order{
+                order_id,
+                created_at,
+                quote_type,
+                size,
+                remaining,
+                format_price
+            };
+    return order;
 }
 
-void OrderBook::addOrder(shared_ptr<Order> order)
+uint64_t OrderBook::addOrder(std::shared_ptr<Order> order)
 {
     order_map[order->id] = order;
+
+    // delete order from limit linked list
+    shared_ptr<Limit> limit = getLimit(order->quote_type, order->price);
+    limit->addOrder(order);
+    return order->id;
 }
 
 void OrderBook::removeOrder(shared_ptr<Order> order)
 {
+    shared_ptr<Limit> limit = getLimit(order->quote_type, order->price);
     order_map.erase(order->id);
+    limit->removeOrder(order);
+    return;
 }
 
-shared_ptr<Order> OrderBook::execute(shared_ptr<Limit> limit, shared_ptr<Order> order)
+shared_ptr<Order> OrderBook::execute(shared_ptr<Order> order)
 {
     // clean-up Order linked list pointers, this is the last order in the limit
+    // TODO: emit trade object to confirm order execution
+    shared_ptr<Limit> limit = getLimit(order->quote_type, order->price);
     removeOrder(order);
-    limit->removeOrder(order);
-    order->remaining = 0;
-
     return limit->head_order;
 }
 
-uint64_t OrderBook::sendLimitOrder( QuoteType quote_type, uint size, double price, std::function<bool(uint64_t, uint64_t)> compare)
+void OrderBook::addLimitOrder(Order& order, std::function<bool(uint64_t, uint64_t)> compare)
 {
 
     // find best priced limit—assume / default new order as a bid
-    // NOTE: limit must be the opposite type of incoming order to match orders
+    // NOTE: limit must be the opposite side of incoming order to match orders
     auto limit_map = ask_limit_map;
     shared_ptr<Limit> best_limit = lowest_ask_limit;
-    if (quote_type == QuoteType::ASK)
+    if (order.quote_type == QuoteType::ASK)
     {
         best_limit = highest_bid_limit;
         limit_map = bid_limit_map;
     }
 
-    // convert price to pennies
-    uint64_t format_price = formatLevelPrice(price);
-
     // if no limit and opposing orders are found, create new limit and new order
     if (best_limit == nullptr)
     {
-        uint64_t order_id = createOrder(quote_type, size, size, format_price);
-        return order_id;
+        addOrder(std::make_shared<Order>(order));
+        return;
     }
 
-    uint remaining = size;
-    while (best_limit != nullptr and compare(best_limit->price, format_price))
+    // iterate through best price limit and match orders with new order
+    while (best_limit != nullptr and compare(best_limit->price, order.price))
     {
         shared_ptr<Order> current_order = best_limit->head_order;
-        while (current_order != nullptr && remaining > 0)
+        while (current_order != nullptr && order.remaining > 0)
         {
-            if (current_order->remaining > remaining)
+            if (current_order->remaining > order.remaining)
             {
-                current_order->remaining -= remaining;
-                remaining = 0;
+                // TODO: emit trade object
+                current_order->remaining -= order.remaining;
+                std::cout << "New order fulfilled before creating limit order. \n";
+                return;
             }
 
-            if (current_order->remaining <= remaining)
+            if (current_order->remaining <= order.remaining)
             {
-                remaining -= current_order->remaining;
-                current_order = execute(best_limit, current_order);
+                order.remaining -= current_order->remaining;
+                current_order = execute(current_order);
             }
         }
 
         // orders exhausted for this limit, move to next best limit
         if (best_limit->size == 0)
         {
-            limit_map.erase(best_limit->price);
+            auto empty_limit = best_limit;
+
             auto next_limit = best_limit->next;
             best_limit = next_limit;
-
-            if (quote_type == QuoteType::BID)
+            if (order.quote_type == QuoteType::BID)
             {
                 lowest_ask_limit = next_limit;
             }
 
-            if (quote_type == QuoteType::ASK)
+            if (order.quote_type == QuoteType::ASK)
             {
                 highest_bid_limit = next_limit;
             }
-        }
 
-        uint64_t order_id = 0;
-        if (remaining == 0)
-        {
-            std::cout << "New order fulfilled before creating limit order. \n";
-            return order_id;
+            // TODO: delete limit method
+            limit_map.erase(empty_limit->price);
         }
     }
 
     // new limit order was not fulfilled—create new limit order
-    uint64_t order_id = 0;
-    if (remaining > 0)
+    if (order.remaining > 0)
     {
-        uint64_t o_id = createOrder(quote_type, size, remaining, format_price);
-        return o_id;
+        addOrder(std::make_shared<Order>(order));
     }
 
-    return order_id;
+    return;
 }
 
 
@@ -341,6 +307,3 @@ std::function<bool(uint64_t, uint64_t)> OrderBook::buildCompareCallback(QuoteTyp
     }
     return compare;
 }
-
-
-// TODO: sendMarketOrder, cancelOrder
