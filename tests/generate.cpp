@@ -12,14 +12,14 @@
 void generateTestData(int num_orders)
 {
     std::ofstream file{"order_data.txt"};
-    for (int i = 0; i < num_orders; i++)
+    for (int i = 0; i <= num_orders; i++)
     {
         // multiply by a random float to get a price
         // use +1 to avoid price and quantities of 0
         double price{((rand() % 10) + 1) * 1.34};
         int size{((rand() % 10) + 1) * 100};
         int is_buy{(i % 2) == 0};
-        file << is_buy << "," << price << "," << size << '\n';
+        file << is_buy << " " << price << " " << size << std::endl;
     }
     file.close();
 

@@ -44,12 +44,6 @@ class OrderBook {
     // start order ids at 1 and reserve 0 for instances where no order created
     uint64_t next_id{1};
 
-    /*
-     * Price is assumed to be given as the tick size initially specified.
-     * Price is then formatted using the exponent for limit / order or display.
-     * Always returns as whole number.
-     */
-    uint64_t formatLevelPrice(double price);
     std::string formatDisplayPrice(double price);
 public:
     OrderBook();
@@ -57,6 +51,13 @@ public:
 
     /* Generates compare function based on QuoteType */
     std::function<bool(uint64_t, uint64_t)> buildCompareCallback(QuoteType quote_type);
+
+    /*
+     * Price is assumed to be given as the tick size initially specified.
+     * Price is then formatted using the exponent for limit / order or display.
+     * Always returns as whole number.
+     */
+    uint64_t formatLevelPrice(double price);
 
     /*
     * Creates an Order using timestamp as the id and adds to limit.
