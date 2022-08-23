@@ -63,7 +63,7 @@ public:
     * Creates an Order using timestamp as the id and adds to limit.
     * An associated Limit is created for the order if it doesn't already exist.
     */
-    Order createOrder(QuoteType quote_type, uint64_t quantity, uint64_t remaining, double price);
+    Order createOrder(QuoteType quote_type, uint64_t quantity, uint64_t filled_quantity, double price);
     uint64_t addOrder(shared_ptr<Order> order);
     void removeOrder(shared_ptr<Order> order);
 

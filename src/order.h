@@ -15,7 +15,7 @@ enum QuoteType {
 */
 struct Order {
 public:
-    Order(uint64_t id, uint64_t created_at, QuoteType quote_type, uint64_t quantity, uint64_t remaining, uint64_t price);
+    Order(uint64_t id, uint64_t created_at, QuoteType quote_type, uint64_t quantity, uint64_t filled_quantity, uint64_t price);
 
     // copy constructor
     Order(Order& o);
@@ -27,11 +27,13 @@ public:
 
     ~Order();
 
+    uint64_t open_quantity();
+
     uint64_t id;
     uint64_t created_at;
     QuoteType quote_type;
     uint64_t quantity;
-    uint64_t remaining;
+    uint64_t filled_quantity;
     uint64_t price;
     std::shared_ptr<Order> next_order{nullptr};
     std::shared_ptr<Order> prev_order{nullptr};

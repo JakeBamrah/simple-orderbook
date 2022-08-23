@@ -62,7 +62,7 @@ double OrderBook::getInsideBidSize()
     {
         return 0;
     }
-    return highest_bid_limit->head_order->remaining;
+    return highest_bid_limit->head_order->open_quantity();
 }
 
 
@@ -81,7 +81,7 @@ double OrderBook::getInsideAskSize()
     {
         return 0;
     }
-    return lowest_ask_limit->head_order->remaining;
+    return lowest_ask_limit->head_order->open_quantity();
 }
 
 
@@ -176,7 +176,7 @@ uint64_t getTimestamp()
     return ms.count();
 }
 
-Order OrderBook::createOrder(QuoteType quote_type, uint64_t quantity, uint64_t remaining, double price)
+Order OrderBook::createOrder(QuoteType quote_type, uint64_t quantity, uint64_t filled_quantity, double price)
 {
     // convert price from tick units to pennies
     uint64_t format_price = formatLevelPrice(price);
@@ -189,7 +189,7 @@ Order OrderBook::createOrder(QuoteType quote_type, uint64_t quantity, uint64_t r
                 created_at,
                 quote_type,
                 quantity,
-                remaining,
+                filled_quantity,
                 format_price
             };
     return order;
@@ -246,19 +246,19 @@ void OrderBook::addLimitOrder(Order& order, std::function<bool(uint64_t, uint64_
     while (best_limit != nullptr and compare(best_limit->price, order.price))
     {
         shared_ptr<Order> current_order = best_limit->head_order;
-        while (current_order != nullptr && order.remaining > 0)
+        while (current_order != nullptr && order.open_quantity() > 0)
         {
-            if (current_order->remaining > order.remaining)
+            if (current_order->open_quantity() > order.open_quantity())
             {
                 // TODO: emit trade object
-                current_order->remaining -= order.remaining;
+                current_order->filled_quantity += order.open_quantity();
                 std::cout << "New order fulfilled before creating limit order. \n";
                 return;
             }
 
-            if (current_order->remaining <= order.remaining)
+            if (current_order->open_quantity() <= order.open_quantity())
             {
-                order.remaining -= current_order->remaining;
+                order.filled_quantity += current_order->open_quantity();
                 current_order = execute(current_order);
             }
         }
@@ -286,7 +286,7 @@ void OrderBook::addLimitOrder(Order& order, std::function<bool(uint64_t, uint64_
     }
 
     // new limit order was not fulfilled—create new limit order
-    if (order.remaining > 0)
+    if (order.open_quantity() > 0)
     {
         addOrder(std::make_shared<Order>(order));
     }

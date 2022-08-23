@@ -51,7 +51,7 @@ Order** getOrdersFromFile(OrderBook& orderbook)
             i, i,
             QuoteType::BID,
             quantity,
-            quantity,
+            0,
             orderbook.formatLevelPrice(price)
         };
         i++;

@@ -23,7 +23,7 @@ void Limit::addOrder(std::shared_ptr<Order> order)
     }
 
     tail_order = order;
-    total_volume += order->remaining;
+    total_volume += order->open_quantity();
     quantity++;
     return;
 }
@@ -31,7 +31,7 @@ void Limit::addOrder(std::shared_ptr<Order> order)
 void Limit::removeOrder(std::shared_ptr<Order> order)
 {
     quantity--;
-    total_volume -= order->remaining;
+    total_volume -= order->open_quantity();
 
     if (head_order == tail_order)
     {
