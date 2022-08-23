@@ -14,7 +14,7 @@
 #define durationMs(a) std::chrono::duration_cast<std::chrono::milliseconds>(a);
 
 /*
- * Splits each line of order data into is_buy, price and size.
+ * Splits each line of order data into is_buy, price and quantity.
  * is_buy = 1 = QuoteType::BID
  */
 template<typename T>
@@ -42,16 +42,16 @@ Order** getOrdersFromFile(OrderBook& orderbook)
     std::ifstream file{"order_data.txt"};
     while (std::getline(file, line) && i <= __NUM_ORDERS__)
     {
-        // is_buy, price, size
+        // is_buy, price, quantity
         std::vector<double> values = split<double>(line, ' ');
         QuoteType quote_type = values[0] == 1 ? QuoteType::BID : QuoteType::ASK;
         double price = values[1];
-        uint size = values[2];
+        uint quantity = values[2];
         orders[i] = new Order{
             i, i,
             QuoteType::BID,
-            size,
-            size,
+            quantity,
+            quantity,
             orderbook.formatLevelPrice(price)
         };
         i++;

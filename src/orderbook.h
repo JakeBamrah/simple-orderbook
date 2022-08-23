@@ -63,7 +63,7 @@ public:
     * Creates an Order using timestamp as the id and adds to limit.
     * An associated Limit is created for the order if it doesn't already exist.
     */
-    Order createOrder(QuoteType quote_type, uint64_t size, uint64_t remaining, double price);
+    Order createOrder(QuoteType quote_type, uint64_t quantity, uint64_t remaining, double price);
     uint64_t addOrder(shared_ptr<Order> order);
     void removeOrder(shared_ptr<Order> order);
 
@@ -74,7 +74,7 @@ public:
      */
     void addLimitOrder(Order& order, std::function<bool(uint64_t, uint64_t)> compare);
 
-    uint64_t sendMarketOrder(QuoteType quote_type, uint size);
+    uint64_t sendMarketOrder(QuoteType quote_type, uint quantity);
     uint64_t sendCancelOrder(uint64_t order_id);
     uint64_t getInsideBid();
     uint64_t getInsideAsk();

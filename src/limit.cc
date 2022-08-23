@@ -5,7 +5,7 @@
 
 Limit::~Limit()
 {
-    price = total_volume = size = 0;
+    price = total_volume = quantity = 0;
     head_order = tail_order = nullptr;
     next = nullptr;
 }
@@ -24,13 +24,13 @@ void Limit::addOrder(std::shared_ptr<Order> order)
 
     tail_order = order;
     total_volume += order->remaining;
-    size++;
+    quantity++;
     return;
 }
 
 void Limit::removeOrder(std::shared_ptr<Order> order)
 {
-    size--;
+    quantity--;
     total_volume -= order->remaining;
 
     if (head_order == tail_order)

@@ -4,8 +4,8 @@
 #define __NUM_ORDERS__ 1000000
 
 /*
- * Generates order data (quote type, price and size) that can be used to create
- * an order. Quantity represents order-size and initial remaining order-size.
+ * Generates order data (quote type, price and quantity) that is used to create
+ * an order. Quantity represents order-quantity and initial remaining quantity.
  * Writing the test data to a file allows for more reproducible testing while
  * also avoiding compiler optimisations which may impact benchmarking.
  */
@@ -17,9 +17,9 @@ void generateTestData(int num_orders)
         // multiply by a random float to get a price
         // use +1 to avoid price and quantities of 0
         double price{((rand() % 10) + 1) * 1.34};
-        int size{((rand() % 10) + 1) * 100};
+        int quantity{((rand() % 10) + 1) * 100};
         int is_buy{(i % 2) == 0};
-        file << is_buy << " " << price << " " << size << std::endl;
+        file << is_buy << " " << price << " " << quantity << std::endl;
     }
     file.close();
 

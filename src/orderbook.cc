@@ -176,7 +176,7 @@ uint64_t getTimestamp()
     return ms.count();
 }
 
-Order OrderBook::createOrder(QuoteType quote_type, uint64_t size, uint64_t remaining, double price)
+Order OrderBook::createOrder(QuoteType quote_type, uint64_t quantity, uint64_t remaining, double price)
 {
     // convert price from tick units to pennies
     uint64_t format_price = formatLevelPrice(price);
@@ -188,7 +188,7 @@ Order OrderBook::createOrder(QuoteType quote_type, uint64_t size, uint64_t remai
                 order_id,
                 created_at,
                 quote_type,
-                size,
+                quantity,
                 remaining,
                 format_price
             };
@@ -264,7 +264,7 @@ void OrderBook::addLimitOrder(Order& order, std::function<bool(uint64_t, uint64_
         }
 
         // orders exhausted for this limit, move to next best limit
-        if (best_limit->size == 0)
+        if (best_limit->quantity == 0)
         {
             auto empty_limit = best_limit;
 
