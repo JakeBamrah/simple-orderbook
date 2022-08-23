@@ -12,8 +12,8 @@ TEST(OrderBookTest, TestOrderBookInitialize)
 {
     OrderBook orderbook;
     ASSERT_EQ(orderbook.size(), 0);
-    ASSERT_EQ(orderbook.getInsideBid(), 0);
-    ASSERT_EQ(orderbook.getInsideAsk(), 0);
+    ASSERT_EQ(orderbook.inside_bid_price(), 0);
+    ASSERT_EQ(orderbook.inside_ask_price(), 0);
 }
 
 TEST(OrderBookTest, TestOrderBookInitException)
@@ -40,7 +40,7 @@ TEST(OrderBookTest, TestOrderBookDefaultTickSize)
     orderbook.addLimitOrder(o1, bid_compare);
 
     ASSERT_EQ(orderbook.size(), 1);
-    ASSERT_EQ(orderbook.getInsideBid(), 10046);
+    ASSERT_EQ(orderbook.inside_bid_price(), 10046);
 }
 
 TEST(OrderBookTest, TestOrderBookTickSize)
@@ -53,10 +53,10 @@ TEST(OrderBookTest, TestOrderBookTickSize)
     Order o1 = orderbook.createOrder(QuoteType::BID, 10, 0, 100.4564);
     orderbook.addLimitOrder(o1, bid_compare);
 
-    std::cout << orderbook.getInsideBid();
+    std::cout << orderbook.inside_bid_price();
 
     ASSERT_EQ(orderbook.size(), 1);
-    ASSERT_EQ(orderbook.getInsideBid(), 1004564);
+    ASSERT_EQ(orderbook.inside_bid_price(), 1004564);
 }
 
 TEST(OrderBookTest, TestOrderBookBidCreate)
@@ -75,7 +75,7 @@ TEST(OrderBookTest, TestOrderBookBidCreate)
     orderbook.addLimitOrder(o3, bid_compare);
 
     ASSERT_TRUE(orderbook.size() == 3);
-    ASSERT_TRUE(orderbook.getInsideBid() == 10000);
+    ASSERT_TRUE(orderbook.inside_bid_price() == 10000);
 }
 
 TEST(OrderBookTest, TestOrderBookAskCreate)
@@ -94,7 +94,7 @@ TEST(OrderBookTest, TestOrderBookAskCreate)
     orderbook.addLimitOrder(o3, ask_compare);
 
     ASSERT_TRUE(orderbook.size() == 3);
-    ASSERT_TRUE(orderbook.getInsideAsk() == 8000);
+    ASSERT_TRUE(orderbook.inside_ask_price() == 8000);
 }
 
 TEST(OrderBookTest, TestSingleBidAskExecute)
@@ -114,8 +114,8 @@ TEST(OrderBookTest, TestSingleBidAskExecute)
     orderbook.addLimitOrder(o2, bid_compare);
 
     ASSERT_TRUE(orderbook.size() == 0);
-    ASSERT_TRUE(orderbook.getInsideBid() == 0);
-    ASSERT_TRUE(orderbook.getInsideAsk() == 0);
+    ASSERT_TRUE(orderbook.inside_bid_price() == 0);
+    ASSERT_TRUE(orderbook.inside_ask_price() == 0);
 }
 
 TEST(OrderBookTest, TestMultipleAskBidExecute)
@@ -137,8 +137,8 @@ TEST(OrderBookTest, TestMultipleAskBidExecute)
     orderbook.addLimitOrder(o3, ask_compare);
 
     ASSERT_TRUE(orderbook.size() == 0);
-    ASSERT_TRUE(orderbook.getInsideBid() == 0);
-    ASSERT_TRUE(orderbook.getInsideAsk() == 0);
+    ASSERT_TRUE(orderbook.inside_bid_price() == 0);
+    ASSERT_TRUE(orderbook.inside_ask_price() == 0);
 }
 
 TEST(OrderBookTest, TestMultipleBidAskExecute)
@@ -160,8 +160,8 @@ TEST(OrderBookTest, TestMultipleBidAskExecute)
     orderbook.addLimitOrder(o3, bid_compare);
 
     ASSERT_TRUE(orderbook.size() == 0);
-    ASSERT_TRUE(orderbook.getInsideBid() == 0);
-    ASSERT_TRUE(orderbook.getInsideAsk() == 0);
+    ASSERT_TRUE(orderbook.inside_bid_price() == 0);
+    ASSERT_TRUE(orderbook.inside_ask_price() == 0);
 }
 
 TEST(OrderBookTest, TestPartialAskExecution)
@@ -181,9 +181,9 @@ TEST(OrderBookTest, TestPartialAskExecution)
     orderbook.addLimitOrder(o2, bid_compare);
 
     ASSERT_EQ(orderbook.size(), 1);
-    ASSERT_EQ(orderbook.getInsideBid(), 0);
-    ASSERT_EQ(orderbook.getInsideAsk(), 10000);
-    ASSERT_EQ(orderbook.getInsideAskSize(), 10);
+    ASSERT_EQ(orderbook.inside_bid_price(), 0);
+    ASSERT_EQ(orderbook.inside_ask_price(), 10000);
+    ASSERT_EQ(orderbook.inside_ask_quantity(), 10);
 }
 
 TEST(OrderBookTest, TestPartialBidExecution)
@@ -207,9 +207,9 @@ TEST(OrderBookTest, TestPartialBidExecution)
     orderbook.addLimitOrder(o4, ask_compare);
 
     ASSERT_EQ(orderbook.size(), 2);
-    ASSERT_EQ(orderbook.getInsideBid(), 8000);
-    ASSERT_EQ(orderbook.getInsideAsk(), 9000);
-    ASSERT_EQ(orderbook.getInsideAskSize(), 15);
-    ASSERT_EQ(orderbook.getInsideBidSize(), 10);
+    ASSERT_EQ(orderbook.inside_bid_price(), 8000);
+    ASSERT_EQ(orderbook.inside_ask_price(), 9000);
+    ASSERT_EQ(orderbook.inside_ask_quantity(), 15);
+    ASSERT_EQ(orderbook.inside_bid_quantity(), 10);
 }
 

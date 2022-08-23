@@ -47,7 +47,7 @@ std::string OrderBook::formatDisplayPrice(double price)
 }
 
 
-uint64_t OrderBook::getInsideBid()
+uint64_t OrderBook::inside_bid_price()
 {
     if (highest_bid_limit == nullptr)
     {
@@ -56,7 +56,7 @@ uint64_t OrderBook::getInsideBid()
     return highest_bid_limit->price;
 }
 
-double OrderBook::getInsideBidSize()
+double OrderBook::inside_bid_quantity()
 {
     if (highest_bid_limit == nullptr || highest_bid_limit->head_order == nullptr)
     {
@@ -66,7 +66,7 @@ double OrderBook::getInsideBidSize()
 }
 
 
-uint64_t OrderBook::getInsideAsk()
+uint64_t OrderBook::inside_ask_price()
 {
     if (lowest_ask_limit == nullptr)
     {
@@ -75,7 +75,7 @@ uint64_t OrderBook::getInsideAsk()
     return lowest_ask_limit->price;
 }
 
-double OrderBook::getInsideAskSize()
+double OrderBook::inside_ask_quantity()
 {
     if (lowest_ask_limit == nullptr || lowest_ask_limit->head_order == nullptr)
     {

@@ -76,10 +76,12 @@ public:
 
     uint64_t sendMarketOrder(QuoteType quote_type, uint quantity);
     uint64_t sendCancelOrder(uint64_t order_id);
-    uint64_t getInsideBid();
-    uint64_t getInsideAsk();
-    double getInsideBidSize();
-    double getInsideAskSize();
+
+    uint64_t inside_bid_price();
+    uint64_t inside_ask_price();
+    double inside_bid_quantity();
+    double inside_ask_quantity();
+
     uint size() { return order_map.size(); };
 };
 
