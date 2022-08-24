@@ -213,15 +213,6 @@ void OrderBook::removeOrder(shared_ptr<Order> order)
     return;
 }
 
-shared_ptr<Order> OrderBook::execute(shared_ptr<Order> order)
-{
-    // clean-up Order linked list pointers, this is the last order in the limit
-    // TODO: emit trade object to confirm order execution
-    shared_ptr<Limit> limit = getLimit(order->quote_type, order->price);
-    removeOrder(order);
-    return limit->head_order;
-}
-
 void OrderBook::addLimitOrder(Order& order, std::function<bool(uint64_t, uint64_t)> compare)
 {
 
@@ -248,18 +239,27 @@ void OrderBook::addLimitOrder(Order& order, std::function<bool(uint64_t, uint64_
         shared_ptr<Order> current_order = best_limit->head_order;
         while (current_order != nullptr && order.open_quantity() > 0)
         {
+            uint64_t price = order.quote_type == QuoteType::BID ?
+                current_order->price : order.price;
             if (current_order->open_quantity() > order.open_quantity())
             {
-                // TODO: emit trade object
-                current_order->filled_quantity += order.open_quantity();
-                std::cout << "New order fulfilled before creating limit order. \n";
+                uint64_t cost = price * order.open_quantity();
+
+                // NOTE: fill() call-order matters—quantity will change
+                current_order->fill(order.open_quantity(), cost, fill_id++);
+                order.fill(order.open_quantity(), cost, fill_id);
                 return;
             }
 
             if (current_order->open_quantity() <= order.open_quantity())
             {
-                order.filled_quantity += current_order->open_quantity();
-                current_order = execute(current_order);
+                uint64_t cost = price * current_order->open_quantity();
+                order.fill(current_order->open_quantity(), cost, fill_id++);
+                current_order->fill(current_order->open_quantity(), cost, fill_id);
+
+                // remove current order from book and return next order
+                removeOrder(current_order);
+                current_order = best_limit->head_order;
             }
         }
 

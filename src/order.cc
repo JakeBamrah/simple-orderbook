@@ -31,9 +31,6 @@ Order& Order::operator=(Order& o)
     next_order = o.next_order;
     prev_order = o.prev_order;
 
-    o.id = o.created_at = o.quantity = o.filled_quantity = o.price = 0;
-    o.next_order = o.prev_order = nullptr;
-
     return *this;
 }
 
@@ -74,6 +71,12 @@ Order::~Order()
 {
     id = created_at = quantity = filled_quantity = price = 0;
     next_order = prev_order = nullptr;
+}
+
+void Order::fill(uint64_t fill_quantity, uint64_t cost, uint64_t fill_id)
+{
+    filled_quantity += fill_quantity;
+    filled_cost += cost;
 }
 
 uint64_t Order::open_quantity()

@@ -20,17 +20,12 @@ class OrderBook {
     // use tick size to build exponent for formatting order prices
     uint tick_size;
     double exp;
+    uint fill_id{0};
 
     /* Creates Limit and updates lowest ask / highest bid */
     shared_ptr<Limit> createBidLimit(uint64_t price);
     shared_ptr<Limit> createAskLimit(uint64_t price);
     shared_ptr<Limit> getLimit(QuoteType quote_type, uint64_t price);
-
-    /*
-     * Executes an Order and cleans-up order being executed.
-     * Order is removed from Limit metadata and Order linked-list.
-     */
-    shared_ptr<Order> execute(shared_ptr<Order> order);
 
     unordered_map<uint, shared_ptr<Limit>> ask_limit_map;
     unordered_map<uint, shared_ptr<Limit>> bid_limit_map;
@@ -63,9 +58,9 @@ public:
     * Creates an Order using timestamp as the id and adds to limit.
     * An associated Limit is created for the order if it doesn't already exist.
     */
-    Order createOrder(QuoteType quote_type, uint64_t quantity, uint64_t filled_quantity, double price);
-    uint64_t addOrder(shared_ptr<Order> order);
-    void removeOrder(shared_ptr<Order> order);
+    virtual Order createOrder(QuoteType quote_type, uint64_t quantity, uint64_t filled_quantity, double price);
+    virtual uint64_t addOrder(shared_ptr<Order> order);
+    virtual void removeOrder(shared_ptr<Order> order);
 
     /*
      * Creates an Order and corresponding limit if necessary.

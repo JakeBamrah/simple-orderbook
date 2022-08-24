@@ -15,7 +15,7 @@
 class Limit {
 public:
     Limit(uint64_t price=0)
-        :price{price}{};
+        :price{price}{}
 
     ~Limit();
 
