@@ -213,3 +213,29 @@ TEST(OrderBookTest, TestPartialBidExecution)
     ASSERT_EQ(orderbook.inside_bid_quantity(), 10);
 }
 
+TEST(OrderBookTest, TestFilledOrderProperties)
+{
+    OrderBook orderbook;
+
+    function<bool(double, double)> bid_compare;
+    function<bool(double, double)> ask_compare;
+    ask_compare = orderbook.buildCompareCallback(QuoteType::ASK);
+    bid_compare = orderbook.buildCompareCallback(QuoteType::BID);
+
+    Order o1 = orderbook.createOrder(QuoteType::BID, 10, 0, 80);
+    Order o2 = orderbook.createOrder(QuoteType::BID, 10, 0, 90);
+    Order o3 = orderbook.createOrder(QuoteType::BID, 15, 0, 90);
+    Order o4 = orderbook.createOrder(QuoteType::ASK, 40, 0, 90);
+
+    // test order fill calculations
+    orderbook.addLimitOrder(o1, bid_compare);
+    orderbook.addLimitOrder(o2, bid_compare);
+    orderbook.addLimitOrder(o3, bid_compare);
+    orderbook.addLimitOrder(o4, ask_compare);
+
+    ASSERT_EQ(orderbook.size(), 2);
+    ASSERT_EQ(o4.open_quantity(), 15);
+    ASSERT_EQ(o4.filled_quantity, 25);
+    ASSERT_EQ(o4.filled_cost, 225000);
+}
+
