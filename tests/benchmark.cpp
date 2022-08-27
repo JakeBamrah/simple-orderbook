@@ -35,7 +35,7 @@ std::vector<T> split(std::string& s, char delim)
 /* Pull in order data from generated file and convert to Order objects. */
 Order** getOrdersFromFile(OrderBook& orderbook)
 {
-    Order** orders = new Order*[__NUM_ORDERS__];
+    Order** orders = new Order*[__NUM_ORDERS__ + 1];
 
     uint i = 0;
     std::string line;
@@ -49,7 +49,7 @@ Order** getOrdersFromFile(OrderBook& orderbook)
         uint quantity = values[2];
         orders[i] = new Order{
             i, i,
-            QuoteType::BID,
+            quote_type,
             quantity,
             0,
             orderbook.formatLevelPrice(price)
@@ -65,7 +65,6 @@ int run_test(OrderBook& orderbook, Order** orders)
 {
     auto start = std::chrono::steady_clock::now();
 
-    int i = 0;
     for (int i; i < __NUM_ORDERS__; i++)
     {
         Order order = **orders;
