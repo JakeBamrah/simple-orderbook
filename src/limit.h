@@ -14,20 +14,25 @@
 */
 class Limit {
 public:
-    Limit(uint64_t price=0)
-        :price{price}{}
+    Limit(uint64_t price=0);
 
-    ~Limit();
+    Limit(const Limit& l);
+    Limit& operator=(const Limit& l);
+
+    Limit(Limit&& l);
+    Limit& operator=(Limit&& l);
+
+    virtual ~Limit();
 
     void removeOrder(std::shared_ptr<Order> order);
     void addOrder(std::shared_ptr<Order> order);
 
     uint64_t price;
     uint total_volume{0};
-    uint quantity{0};
+    uint size{0};
     std::shared_ptr<Order> head_order{nullptr};
     std::shared_ptr<Order> tail_order{nullptr};
-    std::shared_ptr<Limit> next{nullptr};
+    Limit* next{nullptr};
 };
 
 #endif

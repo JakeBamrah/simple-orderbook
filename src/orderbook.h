@@ -23,18 +23,18 @@ class OrderBook {
     uint fill_id{0};
 
     /* Creates Limit and updates lowest ask / highest bid */
-    shared_ptr<Limit> createBidLimit(uint64_t price);
-    shared_ptr<Limit> createAskLimit(uint64_t price);
-    shared_ptr<Limit> getLimit(QuoteType quote_type, uint64_t price);
+    Limit& createBidLimit(uint64_t price);
+    Limit& createAskLimit(uint64_t price);
+    Limit& getLimit(QuoteType quote_type, uint64_t price);
 
-    unordered_map<uint, shared_ptr<Limit>> ask_limit_map;
-    unordered_map<uint, shared_ptr<Limit>> bid_limit_map;
+    unordered_map<uint, Limit> ask_limit_map;
+    unordered_map<uint, Limit> bid_limit_map;
 
     unordered_map<uint64_t, shared_ptr<Order>> order_map;
 
     /* Use price to access limit directly via limit map */
-    shared_ptr<Limit> lowest_ask_limit;
-    shared_ptr<Limit> highest_bid_limit;
+    Limit* lowest_ask_limit{nullptr};
+    Limit* highest_bid_limit{nullptr};
 
     // start order ids at 1 and reserve 0 for instances where no order created
     uint64_t next_id{1};

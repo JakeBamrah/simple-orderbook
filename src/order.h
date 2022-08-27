@@ -25,7 +25,7 @@ public:
     Order(Order&& o);
     Order& operator=(Order&& o);
 
-    ~Order();
+    virtual ~Order();
 
     virtual void fill(uint64_t fill_quantity, uint64_t cost, uint64_t fill_id);
 
