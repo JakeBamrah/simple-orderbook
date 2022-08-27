@@ -8,6 +8,30 @@ using std::function;
 
 // TODO: write market order and cancel order tests
 
+TEST(OrderTest, TestOrderInitialize)
+{
+    Order o{ 1, 1, QuoteType::BID, 100, 0, 100454 };
+
+    ASSERT_EQ(o.id, 1);
+    ASSERT_EQ(o.created_at, 1);
+    ASSERT_EQ(o.quote_type, QuoteType::BID);
+    ASSERT_EQ(o.open_quantity(), 100);
+    ASSERT_EQ(o.filled_quantity, 0);
+    ASSERT_EQ(o.price, 100454);
+}
+
+TEST(LimitTest, TestLimitInitialize)
+{
+    Limit l1{100454};
+    Limit l2{100468};
+    l1.next = &l2;
+
+    ASSERT_EQ(l1.price, 100454);
+    ASSERT_EQ(l1.next, &l2);
+    ASSERT_EQ(l1.total_volume, 0);
+    ASSERT_EQ(l1.size, 0);
+}
+
 TEST(OrderBookTest, TestOrderBookInitialize)
 {
     OrderBook orderbook;
