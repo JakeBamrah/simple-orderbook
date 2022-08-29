@@ -78,6 +78,7 @@ void Limit::addOrder(std::shared_ptr<Order> order)
     else {
         // update pointer of existing tail order
         tail_order->next_order = order;
+        order->prev_order = tail_order;
     }
 
     tail_order = order;
@@ -88,15 +89,31 @@ void Limit::addOrder(std::shared_ptr<Order> order)
 
 void Limit::removeOrder(std::shared_ptr<Order> order)
 {
+    total_volume -= order->open_quantity();
+    size--;
+
     if (head_order == tail_order)
     {
         head_order = nullptr;
         tail_order = nullptr;
+        return;
+    }
+
+    if (order->next_order)
+    {
+        order->next_order->prev_order = order->prev_order;
     } else {
+        // no next order, make previous order the new tail
+        tail_order = order->prev_order;
+    }
+
+    if (order->prev_order)
+    {
+        order->prev_order->next_order = order->next_order;
+    } else {
+        // no previous order, make next order the new head
         head_order = order->next_order;
     }
 
-    total_volume -= order->open_quantity();
-    size--;
     return;
 }

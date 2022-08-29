@@ -201,14 +201,13 @@ uint64_t OrderBook::addOrder(std::shared_ptr<Order> order)
 void OrderBook::removeOrder(shared_ptr<Order> order)
 {
     Limit& limit = getLimit(order->quote_type, order->price);
-    order_map.erase(order->id);
     limit.removeOrder(order);
+    order_map.erase(order->id);
     return;
 }
 
 void OrderBook::addLimitOrder(Order& order, std::function<bool(uint64_t, uint64_t)> compare)
 {
-
     // find best priced limit—assume / default new order as a bid
     // NOTE: limit must be the opposite side of incoming order to match orders
     auto limit_map = ask_limit_map;
