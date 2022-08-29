@@ -74,6 +74,7 @@ void Limit::addOrder(std::shared_ptr<Order> order)
     if (head_order == nullptr)
     {
         head_order = order;
+        tail_order = order;
     }
     else {
         // update pointer of existing tail order
