@@ -35,4 +35,6 @@ public:
     Limit* next{nullptr};
 };
 
+std::ostream& operator<<(std::ostream& os, const Limit& l);
+
 #endif

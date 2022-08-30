@@ -18,18 +18,19 @@ public:
     Order(uint64_t id, uint64_t created_at, QuoteType quote_type, uint64_t quantity, uint64_t filled_quantity, uint64_t price);
 
     // copy constructor
-    Order(Order& o);
-    Order& operator=(Order& o);
+    Order(const Order& o);
+    Order& operator=(const Order& o);
 
     // move constructor
     Order(Order&& o);
     Order& operator=(Order&& o);
 
+
     virtual ~Order();
 
     virtual void fill(uint64_t fill_quantity, uint64_t cost, uint64_t fill_id);
 
-    virtual uint64_t open_quantity();
+    virtual uint64_t open_quantity() const;
 
     uint64_t id;
     uint64_t created_at;
@@ -41,5 +42,7 @@ public:
     std::shared_ptr<Order> next_order{nullptr};
     std::shared_ptr<Order> prev_order{nullptr};
 };
+
+std::ostream& operator<<(std::ostream& os, const Order& o);
 
 #endif

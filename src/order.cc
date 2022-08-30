@@ -1,3 +1,5 @@
+#include <ostream>
+
 #include "order.h"
 
 
@@ -11,7 +13,7 @@ Order::Order(uint64_t id, uint64_t created_at, QuoteType quote_type, uint64_t qu
 {}
 
 // copy constructor
-Order::Order(Order& o)
+Order::Order(const Order& o)
     :id{o.id},
     created_at{o.created_at},
     quote_type{o.quote_type},
@@ -20,7 +22,7 @@ Order::Order(Order& o)
     price{o.price}
 {}
 
-Order& Order::operator=(Order& o)
+Order& Order::operator=(const Order& o)
 {
     id = o.id;
     created_at = o.created_at;
@@ -32,6 +34,19 @@ Order& Order::operator=(Order& o)
     prev_order = o.prev_order;
 
     return *this;
+}
+
+std::ostream& operator<<(std::ostream& os, const Order& o)
+{
+    std::string q = o.quote_type == QuoteType::BID ? "BID" : "ASK";
+    return os << "<Order:1>{" \
+        << "id:" << o.id << " " \
+        << "quote_type:" << q << " " \
+        << "quantity:" << o.quantity << " " \
+        << "price:" << o.price << " " \
+        << "filled_quantity:" << o.filled_quantity << " " \
+        << "open_quantity:" << o.open_quantity()
+        << "}";
 }
 
 // move constructor
@@ -79,7 +94,7 @@ void Order::fill(uint64_t fill_quantity, uint64_t cost, uint64_t fill_id)
     filled_cost += cost;
 }
 
-uint64_t Order::open_quantity()
+uint64_t Order::open_quantity() const
 {
     return quantity - filled_quantity;
 }

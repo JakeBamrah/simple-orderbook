@@ -47,7 +47,7 @@ std::string OrderBook::formatDisplayPrice(double price)
 }
 
 
-uint64_t OrderBook::inside_bid_price()
+uint64_t OrderBook::inside_bid_price() const
 {
     if (highest_bid_limit == nullptr)
     {
@@ -56,7 +56,7 @@ uint64_t OrderBook::inside_bid_price()
     return highest_bid_limit->price;
 }
 
-double OrderBook::inside_bid_quantity()
+double OrderBook::inside_bid_quantity() const
 {
     if (highest_bid_limit == nullptr || highest_bid_limit->head_order == nullptr)
     {
@@ -66,7 +66,7 @@ double OrderBook::inside_bid_quantity()
 }
 
 
-uint64_t OrderBook::inside_ask_price()
+uint64_t OrderBook::inside_ask_price() const
 {
     if (lowest_ask_limit == nullptr)
     {
@@ -75,7 +75,7 @@ uint64_t OrderBook::inside_ask_price()
     return lowest_ask_limit->price;
 }
 
-double OrderBook::inside_ask_quantity()
+double OrderBook::inside_ask_quantity() const
 {
     if (lowest_ask_limit == nullptr || lowest_ask_limit->head_order == nullptr)
     {
@@ -303,4 +303,16 @@ std::function<bool(uint64_t, uint64_t)> OrderBook::buildCompareCallback(QuoteTyp
         compare = [=](uint64_t first, uint64_t second) { return first >= second; };
     }
     return compare;
+}
+
+
+std::ostream& operator<<(std::ostream& os, const OrderBook& ob)
+{
+    return os << "<OrderBook>{" \
+        << "inside_bid_price:" << ob.inside_bid_price() << " " \
+        << "inside_ask_price:" << ob.inside_ask_price() << " " \
+        << "inside_bid_quantity:" << ob.inside_bid_quantity() << " " \
+        << "inside_ask_quantity" << ob.inside_ask_quantity() << " " \
+        << "size:" << ob.size()
+        << "}";
 }

@@ -1,4 +1,5 @@
 #include <memory>
+#include <ostream>
 
 #include "limit.h"
 
@@ -117,4 +118,13 @@ void Limit::removeOrder(std::shared_ptr<Order> order)
     }
 
     return;
+}
+
+std::ostream& operator<<(std::ostream& os, const Limit& l)
+{
+    return os << "<Limit>{" \
+        << "price:" << l.price << " " \
+        << "total_volume:" << l.total_volume << " " \
+        << "size:" << l.size
+        << "}";
 }

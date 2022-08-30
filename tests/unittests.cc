@@ -121,8 +121,6 @@ TEST(OrderBookTest, TestOrderBookTickSize)
     Order o1 = orderbook.createOrder(QuoteType::BID, 10, 0, 100.4564);
     orderbook.addLimitOrder(o1, bid_compare);
 
-    std::cout << orderbook.inside_bid_price();
-
     ASSERT_EQ(orderbook.size(), 1);
     ASSERT_EQ(orderbook.inside_bid_price(), 1004564);
 }

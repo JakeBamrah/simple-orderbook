@@ -72,13 +72,15 @@ public:
     uint64_t sendMarketOrder(QuoteType quote_type, uint quantity);
     uint64_t sendCancelOrder(uint64_t order_id);
 
-    uint64_t inside_bid_price();
-    uint64_t inside_ask_price();
-    double inside_bid_quantity();
-    double inside_ask_quantity();
+    uint64_t inside_bid_price() const;
+    uint64_t inside_ask_price() const;
+    double inside_bid_quantity() const;
+    double inside_ask_quantity() const;
 
-    uint size() { return order_map.size(); };
+    uint size() const { return order_map.size(); };
 };
 
 /* Get epoch time stamp in milliseconds */
 uint64_t getTimestamp();
+
+std::ostream& operator<<(std::ostream& os, const OrderBook& l);
