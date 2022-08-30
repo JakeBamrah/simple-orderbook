@@ -20,6 +20,17 @@ TEST(OrderTest, TestOrderInitialize)
     ASSERT_EQ(o.price, 100454);
 }
 
+TEST(OrderTest, TestOrderFill)
+{
+    Order o{ 1, 1, QuoteType::BID, 100, 0, 100454 };
+    o.fill(90, 90*90104, 1);
+
+    ASSERT_EQ(o.open_quantity(), 10);
+    ASSERT_EQ(o.filled_quantity, 90);
+    ASSERT_EQ(o.filled_cost, 8109360);
+}
+
+
 TEST(LimitTest, TestLimitInitialize)
 {
     Limit l1{100454};
@@ -29,6 +40,39 @@ TEST(LimitTest, TestLimitInitialize)
     ASSERT_EQ(l1.price, 100454);
     ASSERT_EQ(l1.next, &l2);
     ASSERT_EQ(l1.total_volume, 0);
+    ASSERT_EQ(l1.size, 0);
+}
+
+TEST(LimitTest, TestLimitAddOrder)
+{
+    Limit l1{100454};
+    Order o{ 1, 1, QuoteType::BID, 100, 0, 100454 };
+    l1.addOrder(std::make_shared<Order>(o));
+
+    ASSERT_EQ(l1.size, 1);
+}
+
+TEST(LimitTest, TestLimitRemoveOrder)
+{
+    Limit l1{100454};
+    Order o1{ 1, 1, QuoteType::BID, 100, 0, 100454 };
+    Order o2{ 1, 1, QuoteType::BID, 100, 0, 100454 };
+    Order o3{ 1, 1, QuoteType::BID, 100, 0, 100454 };
+
+    shared_ptr<Order> o1p = std::make_shared<Order>(o1);
+    shared_ptr<Order> o2p = std::make_shared<Order>(o2);
+    shared_ptr<Order> o3p = std::make_shared<Order>(o3);
+    l1.addOrder(o1p);
+    l1.addOrder(o2p);
+    l1.addOrder(o3p);
+
+    l1.removeOrder(o2p);
+    ASSERT_EQ(l1.size, 2);
+
+    l1.removeOrder(o1p);
+    ASSERT_EQ(l1.size, 1);
+
+    l1.removeOrder(o3p);
     ASSERT_EQ(l1.size, 0);
 }
 
