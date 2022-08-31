@@ -123,7 +123,7 @@ int main(int argc, const char* argv[])
     OrderBook orderbook{2};
     Order** orders = getOrdersFromFile(orderbook, num_orders);
     auto dur = run_test(orderbook, orders, num_orders);
-    std::cout << "Time take: " << dur << "ms/n";
+    std::cout << "Time take: " << dur << "ms \n";
 
     // clean-up :)
     for (uint i; i <= num_orders; i++)

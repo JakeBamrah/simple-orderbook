@@ -126,5 +126,5 @@ std::ostream& operator<<(std::ostream& os, const Limit& l)
         << "price:" << l.price << " " \
         << "total_volume:" << l.total_volume << " " \
         << "size:" << l.size
-        << "}";
+        << "} \n";
 }

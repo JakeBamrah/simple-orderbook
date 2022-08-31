@@ -39,14 +39,14 @@ Order& Order::operator=(const Order& o)
 std::ostream& operator<<(std::ostream& os, const Order& o)
 {
     std::string q = o.quote_type == QuoteType::BID ? "BID" : "ASK";
-    return os << "<Order:1>{" \
+    return os << "<Order:" << o.id << ">{" \
         << "id:" << o.id << " " \
         << "quote_type:" << q << " " \
         << "quantity:" << o.quantity << " " \
         << "price:" << o.price << " " \
         << "filled_quantity:" << o.filled_quantity << " " \
         << "open_quantity:" << o.open_quantity()
-        << "}";
+        << "} \n";
 }
 
 // move constructor

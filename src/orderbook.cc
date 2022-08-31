@@ -314,5 +314,5 @@ std::ostream& operator<<(std::ostream& os, const OrderBook& ob)
         << "inside_bid_quantity:" << ob.inside_bid_quantity() << " " \
         << "inside_ask_quantity" << ob.inside_ask_quantity() << " " \
         << "size:" << ob.size()
-        << "}";
+        << "} \n";
 }
