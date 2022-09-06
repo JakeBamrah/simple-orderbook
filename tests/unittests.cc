@@ -12,12 +12,12 @@ TEST(OrderTest, TestOrderInitialize)
 {
     Order o{ 1, 1, QuoteType::BID, 100, 0, 100454 };
 
-    ASSERT_EQ(o.id, 1);
-    ASSERT_EQ(o.created_at, 1);
-    ASSERT_EQ(o.quote_type, QuoteType::BID);
+    ASSERT_EQ(o.id(), 1);
+    ASSERT_EQ(o.created_at(), 1);
+    ASSERT_EQ(o.quote_type(), QuoteType::BID);
     ASSERT_EQ(o.open_quantity(), 100);
-    ASSERT_EQ(o.filled_quantity, 0);
-    ASSERT_EQ(o.price, 100454);
+    ASSERT_EQ(o.filled_quantity(), 0);
+    ASSERT_EQ(o.price(), 100454);
 }
 
 TEST(OrderTest, TestOrderFill)
@@ -26,8 +26,8 @@ TEST(OrderTest, TestOrderFill)
     o.fill(90, 90*90104, 1);
 
     ASSERT_EQ(o.open_quantity(), 10);
-    ASSERT_EQ(o.filled_quantity, 90);
-    ASSERT_EQ(o.filled_cost, 8109360);
+    ASSERT_EQ(o.filled_quantity(), 90);
+    ASSERT_EQ(o.filled_cost(), 8109360);
 }
 
 
@@ -37,10 +37,10 @@ TEST(LimitTest, TestLimitInitialize)
     Limit l2{100468};
     l1.next = &l2;
 
-    ASSERT_EQ(l1.price, 100454);
+    ASSERT_EQ(l1.price(), 100454);
     ASSERT_EQ(l1.next, &l2);
-    ASSERT_EQ(l1.total_volume, 0);
-    ASSERT_EQ(l1.size, 0);
+    ASSERT_EQ(l1.total_volume(), 0);
+    ASSERT_EQ(l1.size(), 0);
 }
 
 TEST(LimitTest, TestLimitAddOrder)
@@ -49,7 +49,7 @@ TEST(LimitTest, TestLimitAddOrder)
     Order o{ 1, 1, QuoteType::BID, 100, 0, 100454 };
     l1.addOrder(std::make_shared<Order>(o));
 
-    ASSERT_EQ(l1.size, 1);
+    ASSERT_EQ(l1.size(), 1);
 }
 
 TEST(LimitTest, TestLimitRemoveOrder)
@@ -67,13 +67,13 @@ TEST(LimitTest, TestLimitRemoveOrder)
     l1.addOrder(o3p);
 
     l1.removeOrder(o2p);
-    ASSERT_EQ(l1.size, 2);
+    ASSERT_EQ(l1.size(), 2);
 
     l1.removeOrder(o1p);
-    ASSERT_EQ(l1.size, 1);
+    ASSERT_EQ(l1.size(), 1);
 
     l1.removeOrder(o3p);
-    ASSERT_EQ(l1.size, 0);
+    ASSERT_EQ(l1.size(), 0);
 }
 
 TEST(OrderBookTest, TestOrderBookInitialize)
@@ -301,7 +301,7 @@ TEST(OrderBookTest, TestFilledOrderProperties)
 
     ASSERT_EQ(orderbook.size(), 2);
     ASSERT_EQ(o4.open_quantity(), 15);
-    ASSERT_EQ(o4.filled_quantity, 25);
-    ASSERT_EQ(o4.filled_cost, 225000);
+    ASSERT_EQ(o4.filled_quantity(), 25);
+    ASSERT_EQ(o4.filled_cost(), 225000);
 }
 

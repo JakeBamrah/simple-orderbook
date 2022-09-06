@@ -15,6 +15,9 @@ enum QuoteType {
 */
 struct Order {
 public:
+    std::shared_ptr<Order> next_order{nullptr};
+    std::shared_ptr<Order> prev_order{nullptr};
+
     Order(uint64_t id, uint64_t created_at, QuoteType quote_type, uint64_t quantity, uint64_t filled_quantity, uint64_t price);
 
     // copy constructor
@@ -25,22 +28,27 @@ public:
     Order(Order&& o);
     Order& operator=(Order&& o);
 
-
     virtual ~Order();
 
-    virtual void fill(uint64_t fill_quantity, uint64_t cost, uint64_t fill_id);
+    uint64_t id() const { return _id; };
+    uint64_t open_quantity() const;
+    uint64_t created_at() const { return _created_at; };
+    QuoteType quote_type() const { return _quote_type; };
+    uint64_t quantity() const { return _quantity; };
+    uint64_t filled_quantity() const { return _filled_quantity; };
+    uint64_t filled_cost() const { return _filled_cost; };
+    uint64_t price() const { return _price; };
 
-    virtual uint64_t open_quantity() const;
+    void fill(uint64_t fill_quantity, uint64_t cost, uint64_t fill_id);
 
-    uint64_t id;
-    uint64_t created_at;
-    QuoteType quote_type;
-    uint64_t quantity;
-    uint64_t filled_quantity;
-    uint64_t filled_cost{0};
-    uint64_t price;
-    std::shared_ptr<Order> next_order{nullptr};
-    std::shared_ptr<Order> prev_order{nullptr};
+private:
+    uint64_t _id;
+    uint64_t _created_at;
+    QuoteType _quote_type;
+    uint64_t _quantity;
+    uint64_t _filled_quantity;
+    uint64_t _filled_cost{0};
+    uint64_t _price;
 };
 
 std::ostream& operator<<(std::ostream& os, const Order& o);

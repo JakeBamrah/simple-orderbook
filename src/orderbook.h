@@ -17,28 +17,6 @@ using std::unordered_map;
 * Direct access to the inside of the book is provided efficient matching.
 */
 class OrderBook {
-    // use tick size to build exponent for formatting order prices
-    uint tick_size;
-    double exp;
-    uint fill_id{0};
-    uint _size{0};
-
-    /* Creates Limit and updates lowest ask / highest bid */
-    Limit& createBidLimit(uint64_t price);
-    Limit& createAskLimit(uint64_t price);
-    Limit& getLimit(QuoteType quote_type, uint64_t price);
-
-    unordered_map<uint, Limit> ask_limit_map;
-    unordered_map<uint, Limit> bid_limit_map;
-
-    /* Use price to access limit directly via limit map */
-    Limit* lowest_ask_limit{nullptr};
-    Limit* highest_bid_limit{nullptr};
-
-    // start order ids at 1 and reserve 0 for instances where no order created
-    uint64_t next_id{1};
-
-    std::string formatDisplayPrice(double price);
 public:
     OrderBook();
     OrderBook(uint tick_size);
@@ -77,6 +55,29 @@ public:
     double inside_ask_quantity() const;
 
     uint size() const { return _size; };
+private:
+    // use tick size to build exponent for formatting order prices
+    uint tick_size;
+    double exp;
+    uint fill_id{0};
+    uint _size{0};
+
+    /* Creates Limit and updates lowest ask / highest bid */
+    Limit& createBidLimit(uint64_t price);
+    Limit& createAskLimit(uint64_t price);
+    Limit& getLimit(QuoteType quote_type, uint64_t price);
+
+    unordered_map<uint, Limit> ask_limit_map;
+    unordered_map<uint, Limit> bid_limit_map;
+
+    /* Use price to access limit directly via limit map */
+    Limit* lowest_ask_limit{nullptr};
+    Limit* highest_bid_limit{nullptr};
+
+    // start order ids at 1 and reserve 0 for instances where no order created
+    uint64_t next_id{1};
+
+    std::string formatDisplayPrice(double price);
 };
 
 /* Get epoch time stamp in milliseconds */

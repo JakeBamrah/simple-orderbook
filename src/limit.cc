@@ -4,21 +4,21 @@
 #include "limit.h"
 
 Limit::Limit(uint64_t price)
-    :price{price}{}
+    :_price{price}{}
 
 Limit::Limit(const Limit& l)
-    :price{l.price},
-    total_volume{l.total_volume},
-    size{l.size},
-    head_order{l.head_order},
+    :head_order{l.head_order},
     tail_order{l.tail_order},
-    next{l.next} {}
+    next{l.next},
+    _price{l.price()},
+    _total_volume{l.total_volume()},
+    _size{l.size()} {}
 
 Limit& Limit::operator=(const Limit& l)
 {
-    price = l.price;
-    total_volume = l.total_volume;
-    size = l.size;
+    _price = l.price();
+    _total_volume = l.total_volume();
+    _size = l.size();
     head_order = l.head_order;
     tail_order = l.tail_order;
     next = l.next;
@@ -27,14 +27,14 @@ Limit& Limit::operator=(const Limit& l)
 }
 
 Limit::Limit(Limit&& l)
-    :price{l.price},
-    total_volume{l.total_volume},
-    size{l.size},
-    head_order{l.head_order},
+    :head_order{l.head_order},
     tail_order{l.tail_order},
-    next{l.next}
+    next{l.next},
+    _price{l.price()},
+    _total_volume{l.total_volume()},
+    _size{l.size()}
 {
-    l.price = l.total_volume = l.size = 0;
+    l._price = l._total_volume = l._size = 0;
     l.head_order = nullptr;
     l.tail_order = nullptr;
     // BUG: any limits pointing to this one via next will seg-fault.
@@ -45,14 +45,14 @@ Limit& Limit::operator=(Limit&& l)
 {
     if (this != &l)
     {
-        price = l.price;
-        total_volume = l.total_volume;
-        size = l.size;
+        _price = l.price();
+        _total_volume = l.total_volume();
+        _size = l.size();
         head_order = l.head_order;
         tail_order = l.tail_order;
         next = l.next;
 
-        l.price = l.total_volume = l.size = 0;
+        l._price = l._total_volume = l._size = 0;
         l.head_order = nullptr;
         l.tail_order = nullptr;
         // BUG: any limits pointing to this one via next will seg-fault.
@@ -64,7 +64,7 @@ Limit& Limit::operator=(Limit&& l)
 
 Limit::~Limit()
 {
-    price = total_volume = size = 0;
+    _price = _total_volume = _size = 0;
     head_order = tail_order = nullptr;
     next = nullptr;
 }
@@ -84,15 +84,15 @@ void Limit::addOrder(std::shared_ptr<Order> order)
     }
 
     tail_order = order;
-    total_volume += order->open_quantity();
-    size++;
+    _total_volume += order->open_quantity();
+    _size++;
     return;
 }
 
 void Limit::removeOrder(std::shared_ptr<Order> order)
 {
-    total_volume -= order->open_quantity();
-    size--;
+    _total_volume -= order->open_quantity();
+    _size--;
 
     if (head_order == tail_order)
     {
@@ -123,8 +123,8 @@ void Limit::removeOrder(std::shared_ptr<Order> order)
 std::ostream& operator<<(std::ostream& os, const Limit& l)
 {
     return os << "<Limit>{" \
-        << "price:" << l.price << " " \
-        << "total_volume:" << l.total_volume << " " \
-        << "size:" << l.size
+        << "price:" << l.price() << " " \
+        << "total_volume:" << l.total_volume() << " " \
+        << "size:" << l.size()
         << "} \n";
 }

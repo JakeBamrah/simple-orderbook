@@ -98,7 +98,7 @@ int run_test(OrderBook& orderbook, Order** orders, int num_orders)
     for (int i; i < num_orders; i++)
     {
         Order order = **orders;
-        auto compare = orderbook.buildCompareCallback(order.quote_type);
+        auto compare = orderbook.buildCompareCallback(order.quote_type());
         orderbook.addLimitOrder(order, compare);
         orders++;
         if (*orders == nullptr)
