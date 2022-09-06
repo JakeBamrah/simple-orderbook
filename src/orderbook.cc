@@ -188,21 +188,20 @@ Order OrderBook::createOrder(QuoteType quote_type, uint64_t quantity, uint64_t f
     return order;
 }
 
-uint64_t OrderBook::addOrder(std::shared_ptr<Order> order)
+void OrderBook::addOrder(std::shared_ptr<Order> order)
 {
-    order_map[order->id] = order;
-
     // delete order from limit linked list
     Limit& limit = getLimit(order->quote_type, order->price);
     limit.addOrder(order);
-    return order->id;
+    _size += 1;
+    return;
 }
 
 void OrderBook::removeOrder(shared_ptr<Order> order)
 {
     Limit& limit = getLimit(order->quote_type, order->price);
     limit.removeOrder(order);
-    order_map.erase(order->id);
+    _size -= 1;
     return;
 }
 

@@ -21,6 +21,7 @@ class OrderBook {
     uint tick_size;
     double exp;
     uint fill_id{0};
+    uint _size{0};
 
     /* Creates Limit and updates lowest ask / highest bid */
     Limit& createBidLimit(uint64_t price);
@@ -29,8 +30,6 @@ class OrderBook {
 
     unordered_map<uint, Limit> ask_limit_map;
     unordered_map<uint, Limit> bid_limit_map;
-
-    unordered_map<uint64_t, shared_ptr<Order>> order_map;
 
     /* Use price to access limit directly via limit map */
     Limit* lowest_ask_limit{nullptr};
@@ -59,7 +58,7 @@ public:
     * An associated Limit is created for the order if it doesn't already exist.
     */
     virtual Order createOrder(QuoteType quote_type, uint64_t quantity, uint64_t filled_quantity, double price);
-    virtual uint64_t addOrder(shared_ptr<Order> order);
+    virtual void addOrder(shared_ptr<Order> order);
     virtual void removeOrder(shared_ptr<Order> order);
 
     /*
@@ -77,7 +76,7 @@ public:
     double inside_bid_quantity() const;
     double inside_ask_quantity() const;
 
-    uint size() const { return order_map.size(); };
+    uint size() const { return _size; };
 };
 
 /* Get epoch time stamp in milliseconds */
