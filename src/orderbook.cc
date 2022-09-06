@@ -139,9 +139,9 @@ Limit& OrderBook::createAskLimit(uint64_t price)
     return limit;
 }
 
-Limit& OrderBook::getLimit(QuoteType quote_type, uint64_t price)
+Limit& OrderBook::getLimit(bool is_bid, uint64_t price)
 {
-    if (quote_type == QuoteType::BID)
+    if (is_bid)
     {
         if (bid_limit_map.find(price) == bid_limit_map.end())
         {
@@ -169,7 +169,7 @@ uint64_t getTimestamp()
     return ms.count();
 }
 
-Order OrderBook::createOrder(QuoteType quote_type, uint64_t quantity, uint64_t filled_quantity, double price)
+Order OrderBook::createOrder(bool is_bid, uint64_t quantity, uint64_t filled_quantity, double price)
 {
     // convert price from tick units to pennies
     uint64_t format_price = formatLevelPrice(price);
@@ -180,7 +180,7 @@ Order OrderBook::createOrder(QuoteType quote_type, uint64_t quantity, uint64_t f
     Order order{
                 order_id,
                 created_at,
-                quote_type,
+                is_bid,
                 quantity,
                 filled_quantity,
                 format_price
@@ -191,7 +191,7 @@ Order OrderBook::createOrder(QuoteType quote_type, uint64_t quantity, uint64_t f
 void OrderBook::addOrder(std::shared_ptr<Order> order)
 {
     // delete order from limit linked list
-    Limit& limit = getLimit(order->quote_type(), order->price());
+    Limit& limit = getLimit(order->is_bid(), order->price());
     limit.addOrder(order);
     _size += 1;
     return;
@@ -199,7 +199,7 @@ void OrderBook::addOrder(std::shared_ptr<Order> order)
 
 void OrderBook::removeOrder(shared_ptr<Order> order)
 {
-    Limit& limit = getLimit(order->quote_type(), order->price());
+    Limit& limit = getLimit(order->is_bid(), order->price());
     limit.removeOrder(order);
     _size -= 1;
     return;
@@ -211,7 +211,7 @@ void OrderBook::addLimitOrder(Order& order, std::function<bool(uint64_t, uint64_
     // NOTE: limit must be the opposite side of incoming order to match orders
     auto limit_map = ask_limit_map;
     Limit* best_limit = lowest_ask_limit;
-    if (order.quote_type() == QuoteType::ASK)
+    if (!order.is_bid())
     {
         limit_map = bid_limit_map;
         best_limit = highest_bid_limit;
@@ -233,8 +233,7 @@ void OrderBook::addLimitOrder(Order& order, std::function<bool(uint64_t, uint64_
         shared_ptr<Order> current_order = best_limit->head_order;
         while (current_order != nullptr)
         {
-            uint64_t price = order.quote_type() == QuoteType::BID ?
-                current_order->price() : order.price();
+            uint64_t price = order.is_bid() ? current_order->price() : order.price();
             if (current_order->open_quantity() > order.open_quantity())
             {
                 uint64_t cost = price * order.open_quantity();
@@ -267,13 +266,11 @@ void OrderBook::addLimitOrder(Order& order, std::function<bool(uint64_t, uint64_
 
             Limit* next_limit = best_limit->next;
             best_limit = next_limit;
-            if (order.quote_type() == QuoteType::BID)
+            if (order.is_bid())
             {
                 lowest_ask_limit = next_limit;
             }
-
-            if (order.quote_type() == QuoteType::ASK)
-            {
+            else {
                 highest_bid_limit = next_limit;
             }
 
@@ -291,13 +288,13 @@ void OrderBook::addLimitOrder(Order& order, std::function<bool(uint64_t, uint64_
 }
 
 
-std::function<bool(uint64_t, uint64_t)> OrderBook::buildCompareCallback(QuoteType quote_type)
+std::function<bool(uint64_t, uint64_t)> OrderBook::buildCompareCallback(bool is_bid)
 {
     // default to compare function used for BID orders
     std::function<bool(uint64_t, uint64_t)> compare;
     compare = [=](uint64_t first, uint64_t second) { return first <= second; };
 
-    if (quote_type == QuoteType::ASK)
+    if (!is_bid)
     {
         compare = [=](uint64_t first, uint64_t second) { return first >= second; };
     }

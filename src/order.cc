@@ -3,10 +3,10 @@
 #include "order.h"
 
 
-Order::Order(uint64_t id, uint64_t created_at, QuoteType quote_type, uint64_t quantity, uint64_t filled_quantity, uint64_t price)
+Order::Order(uint64_t id, uint64_t created_at, bool is_bid, uint64_t quantity, uint64_t filled_quantity, uint64_t price)
     :_id{id},
     _created_at{created_at},
-    _quote_type{quote_type},
+    _is_bid{is_bid},
     _quantity{quantity},
     _filled_quantity{filled_quantity},
     _price{price}
@@ -16,7 +16,7 @@ Order::Order(uint64_t id, uint64_t created_at, QuoteType quote_type, uint64_t qu
 Order::Order(const Order& o)
     :_id{o.id()},
     _created_at{o.created_at()},
-    _quote_type{o.quote_type()},
+    _is_bid{o.is_bid()},
     _quantity{o.quantity()},
     _filled_quantity{o.filled_quantity()},
     _price{o.price()}
@@ -26,7 +26,7 @@ Order& Order::operator=(const Order& o)
 {
     _id = o.id();
     _created_at = o.created_at();
-    _quote_type = o.quote_type();
+    _is_bid = o.is_bid();
     _quantity = o.quantity();
     _filled_quantity = o.filled_quantity();
     _price = o.price();
@@ -38,10 +38,10 @@ Order& Order::operator=(const Order& o)
 
 std::ostream& operator<<(std::ostream& os, const Order& o)
 {
-    std::string q = o.quote_type() == QuoteType::BID ? "BID" : "ASK";
+    std::string q = o.is_bid() ? "BID" : "ASK";
     return os << "<Order:" << o.id() << ">{" \
         << "id:" << o.id() << " " \
-        << "quote_type:" << q << " " \
+        << "is_bid:" << q << " " \
         << "quantity:" << o.quantity() << " " \
         << "price:" << o.price() << " " \
         << "filled_quantity:" << o.filled_quantity() << " " \
@@ -53,7 +53,7 @@ std::ostream& operator<<(std::ostream& os, const Order& o)
 Order::Order(Order&& o)
     :_id{o.id()},
     _created_at{o.created_at()},
-    _quote_type{o.quote_type()},
+    _is_bid{o.is_bid()},
     _quantity{o.quantity()},
     _filled_quantity{o.filled_quantity()},
     _price{o.price()}
@@ -68,7 +68,7 @@ Order& Order::operator=(Order&& o)
     {
         _id = o.id();
         _created_at = o.created_at();
-        _quote_type = o.quote_type();
+        _is_bid = o.is_bid();
         _quantity = o.quantity();
         _filled_quantity = o.filled_quantity();
         _price = o.price();

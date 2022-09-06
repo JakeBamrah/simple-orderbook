@@ -4,11 +4,6 @@
 #ifndef ORDER_H
 #define ORDER_H
 
-enum QuoteType {
-    BID,
-    ASK
-};
-
 /*
 * Contains all the information of a simple order.
 * Each Order is represented as a node within a linked list.
@@ -18,7 +13,7 @@ public:
     std::shared_ptr<Order> next_order{nullptr};
     std::shared_ptr<Order> prev_order{nullptr};
 
-    Order(uint64_t id, uint64_t created_at, QuoteType quote_type, uint64_t quantity, uint64_t filled_quantity, uint64_t price);
+    Order(uint64_t id, uint64_t created_at, bool is_bid, uint64_t quantity, uint64_t filled_quantity, uint64_t price);
 
     // copy constructor
     Order(const Order& o);
@@ -33,7 +28,7 @@ public:
     uint64_t id() const { return _id; };
     uint64_t open_quantity() const;
     uint64_t created_at() const { return _created_at; };
-    QuoteType quote_type() const { return _quote_type; };
+    bool is_bid() const { return _is_bid; };
     uint64_t quantity() const { return _quantity; };
     uint64_t filled_quantity() const { return _filled_quantity; };
     uint64_t filled_cost() const { return _filled_cost; };
@@ -44,7 +39,7 @@ public:
 private:
     uint64_t _id;
     uint64_t _created_at;
-    QuoteType _quote_type;
+    bool _is_bid;
     uint64_t _quantity;
     uint64_t _filled_quantity;
     uint64_t _filled_cost{0};

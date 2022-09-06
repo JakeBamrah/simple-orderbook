@@ -74,12 +74,12 @@ Order** getOrdersFromFile(OrderBook& orderbook, int num_orders)
     {
         // is_buy, price, quantity
         std::vector<double> values = split<double>(line, ' ');
-        QuoteType quote_type = values[0] == 1 ? QuoteType::BID : QuoteType::ASK;
+        bool is_bid = values[0] == 1 ? true : false;
         double price = values[1];
         uint quantity = values[2];
         orders[i] = new Order{
             i, i,
-            quote_type,
+            is_bid,
             quantity,
             0,
             orderbook.formatLevelPrice(price)
@@ -98,7 +98,7 @@ int run_test(OrderBook& orderbook, Order** orders, int num_orders)
     for (int i; i < num_orders; i++)
     {
         Order order = **orders;
-        auto compare = orderbook.buildCompareCallback(order.quote_type());
+        auto compare = orderbook.buildCompareCallback(order.is_bid());
         orderbook.addLimitOrder(order, compare);
         orders++;
         if (*orders == nullptr)

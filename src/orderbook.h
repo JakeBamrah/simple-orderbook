@@ -22,7 +22,7 @@ public:
     OrderBook(uint tick_size);
 
     /* Generates compare function based on QuoteType */
-    std::function<bool(uint64_t, uint64_t)> buildCompareCallback(QuoteType quote_type);
+    std::function<bool(uint64_t, uint64_t)> buildCompareCallback(bool is_bid);
 
     /*
      * Price is assumed to be given as the tick size initially specified.
@@ -35,7 +35,7 @@ public:
     * Creates an Order using timestamp as the id and adds to limit.
     * An associated Limit is created for the order if it doesn't already exist.
     */
-    virtual Order createOrder(QuoteType quote_type, uint64_t quantity, uint64_t filled_quantity, double price);
+    virtual Order createOrder(bool is_bid, uint64_t quantity, uint64_t filled_quantity, double price);
     virtual void addOrder(shared_ptr<Order> order);
     virtual void removeOrder(shared_ptr<Order> order);
 
@@ -46,7 +46,7 @@ public:
      */
     void addLimitOrder(Order& order, std::function<bool(uint64_t, uint64_t)> compare);
 
-    uint64_t sendMarketOrder(QuoteType quote_type, uint quantity);
+    uint64_t sendMarketOrder(bool is_bid, uint quantity);
     uint64_t sendCancelOrder(uint64_t order_id);
 
     uint64_t inside_bid_price() const;
@@ -65,7 +65,7 @@ private:
     /* Creates Limit and updates lowest ask / highest bid */
     Limit& createBidLimit(uint64_t price);
     Limit& createAskLimit(uint64_t price);
-    Limit& getLimit(QuoteType quote_type, uint64_t price);
+    Limit& getLimit(bool is_bid, uint64_t price);
 
     unordered_map<uint, Limit> ask_limit_map;
     unordered_map<uint, Limit> bid_limit_map;
