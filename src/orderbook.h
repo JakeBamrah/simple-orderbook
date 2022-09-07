@@ -44,7 +44,7 @@ public:
      */
     void addOrder(Order& order);
     void removeOrder(shared_ptr<Order> order);
-    Order& matchOrder(Limit* limit, unordered_map<uint, Limit> limit_map, Order& order);
+    bool matchOrder(Limit* limit, unordered_map<uint, Limit> limit_map, Order& order);
 
     uint64_t sendMarketOrder(bool is_bid, uint quantity);
     uint64_t sendCancelOrder(uint64_t order_id);

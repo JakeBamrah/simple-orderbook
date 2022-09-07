@@ -196,7 +196,7 @@ void OrderBook::removeOrder(shared_ptr<Order> order)
     return;
 }
 
-Order& OrderBook::matchOrder(Limit* limit, unordered_map<uint, Limit> limit_map, Order& order)
+bool OrderBook::matchOrder(Limit* limit, unordered_map<uint, Limit> limit_map, Order& order)
 {
     // iterate through best price limit and match orders with new order
     std::function<bool(uint64_t, uint64_t)> compare = buildCompareCallback(order.is_bid());
@@ -216,7 +216,7 @@ Order& OrderBook::matchOrder(Limit* limit, unordered_map<uint, Limit> limit_map,
                 // NOTE: fill() call-order matters—quantity will change
                 current_order->fill(order.open_quantity(), cost, fill_id++);
                 order.fill(order.open_quantity(), cost, fill_id);
-                return order;
+                break;
             }
 
             if (current_order->open_quantity() <= order.open_quantity())
@@ -252,7 +252,8 @@ Order& OrderBook::matchOrder(Limit* limit, unordered_map<uint, Limit> limit_map,
             limit_map.erase(empty_limit->price());
         }
     }
-    return order;
+
+    return (order.open_quantity() == 0);
 }
 
 void OrderBook::addOrder(Order& order)
@@ -276,10 +277,10 @@ void OrderBook::addOrder(Order& order)
         return;
     }
 
-    order = matchOrder(best_limit, limit_map, order);
+    bool matched = matchOrder(best_limit, limit_map, order);
 
     // order unfulfilled—add order to limit
-    if (order.open_quantity() > 0)
+    if (!matched)
     {
         Limit& limit = getLimit(order.is_bid(), order.price());
         limit.addOrder(std::make_shared<Order>(order));
