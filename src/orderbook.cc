@@ -188,24 +188,74 @@ Order OrderBook::createOrder(bool is_bid, uint64_t quantity, uint64_t filled_qua
     return order;
 }
 
-void OrderBook::addOrder(std::shared_ptr<Order> order)
-{
-    // delete order from limit linked list
-    Limit& limit = getLimit(order->is_bid(), order->price());
-    limit.addOrder(order);
-    _size += 1;
-    return;
-}
-
 void OrderBook::removeOrder(shared_ptr<Order> order)
 {
     Limit& limit = getLimit(order->is_bid(), order->price());
     limit.removeOrder(order);
-    _size -= 1;
+    _size--;
     return;
 }
 
-void OrderBook::addLimitOrder(Order& order, std::function<bool(uint64_t, uint64_t)> compare)
+Order& OrderBook::matchOrder(Limit* limit, unordered_map<uint, Limit> limit_map, Order& order)
+{
+    // iterate through best price limit and match orders with new order
+    std::function<bool(uint64_t, uint64_t)> compare = buildCompareCallback(order.is_bid());
+    while (limit != nullptr && compare(limit->price(), order.price()))
+    {
+        if (order.open_quantity() == 0)
+            break;
+
+        shared_ptr<Order> current_order = limit->head_order;
+        while (current_order != nullptr)
+        {
+            uint64_t price = order.is_bid() ? current_order->price() : order.price();
+            if (current_order->open_quantity() > order.open_quantity())
+            {
+                uint64_t cost = price * order.open_quantity();
+
+                // NOTE: fill() call-order matters—quantity will change
+                current_order->fill(order.open_quantity(), cost, fill_id++);
+                order.fill(order.open_quantity(), cost, fill_id);
+                return order;
+            }
+
+            if (current_order->open_quantity() <= order.open_quantity())
+            {
+                uint64_t cost = price * current_order->open_quantity();
+
+                // NOTE: fill() call-order matters—quantity will change
+                order.fill(current_order->open_quantity(), cost, fill_id++);
+                current_order->fill(current_order->open_quantity(), cost, fill_id);
+
+                // remove current order from book and return next order
+                removeOrder(current_order);
+                current_order = limit->head_order;
+            }
+        }
+
+
+        // orders exhausted for this limit, move to next best limit
+        if (limit->size() == 0)
+        {
+            Limit* empty_limit = limit;
+
+            Limit* next_limit = limit->next;
+            limit = next_limit;
+            if (order.is_bid())
+            {
+                lowest_ask_limit = next_limit;
+            }
+            else {
+                highest_bid_limit = next_limit;
+            }
+
+            limit_map.erase(empty_limit->price());
+        }
+    }
+    return order;
+}
+
+void OrderBook::addOrder(Order& order)
 {
     // find best priced limit—assume / default new order as a bid
     // NOTE: limit must be the opposite side of incoming order to match orders
@@ -220,68 +270,20 @@ void OrderBook::addLimitOrder(Order& order, std::function<bool(uint64_t, uint64_
     // if no limit and opposing orders are found, create new limit and new order
     if (best_limit == nullptr)
     {
-        addOrder(std::make_shared<Order>(order));
+        Limit& limit = getLimit(order.is_bid(), order.price());
+        limit.addOrder(std::make_shared<Order>(order));
+        _size++;
         return;
     }
 
-    // iterate through best price limit and match orders with new order
-    while (best_limit != nullptr && compare(best_limit->price(), order.price()))
-    {
-        if (order.open_quantity() == 0)
-            break;
+    order = matchOrder(best_limit, limit_map, order);
 
-        shared_ptr<Order> current_order = best_limit->head_order;
-        while (current_order != nullptr)
-        {
-            uint64_t price = order.is_bid() ? current_order->price() : order.price();
-            if (current_order->open_quantity() > order.open_quantity())
-            {
-                uint64_t cost = price * order.open_quantity();
-
-                // NOTE: fill() call-order matters—quantity will change
-                current_order->fill(order.open_quantity(), cost, fill_id++);
-                order.fill(order.open_quantity(), cost, fill_id);
-                return;
-            }
-
-            if (current_order->open_quantity() <= order.open_quantity())
-            {
-                uint64_t cost = price * current_order->open_quantity();
-
-                // NOTE: fill() call-order matters—quantity will change
-                order.fill(current_order->open_quantity(), cost, fill_id++);
-                current_order->fill(current_order->open_quantity(), cost, fill_id);
-
-                // remove current order from book and return next order
-                removeOrder(current_order);
-                current_order = best_limit->head_order;
-            }
-        }
-
-
-        // orders exhausted for this limit, move to next best limit
-        if (best_limit->size() == 0)
-        {
-            Limit* empty_limit = best_limit;
-
-            Limit* next_limit = best_limit->next;
-            best_limit = next_limit;
-            if (order.is_bid())
-            {
-                lowest_ask_limit = next_limit;
-            }
-            else {
-                highest_bid_limit = next_limit;
-            }
-
-            limit_map.erase(empty_limit->price());
-        }
-    }
-
-    // new limit order was not fulfilled—create new limit order
+    // order unfulfilled—add order to limit
     if (order.open_quantity() > 0)
     {
-        addOrder(std::make_shared<Order>(order));
+        Limit& limit = getLimit(order.is_bid(), order.price());
+        limit.addOrder(std::make_shared<Order>(order));
+        _size++;
     }
 
     return;

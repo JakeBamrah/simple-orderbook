@@ -101,11 +101,8 @@ TEST(OrderBookTest, TestOrderBookDefaultTickSize)
 {
     OrderBook orderbook;
 
-    function<bool(double, double)> bid_compare;
-    bid_compare = orderbook.buildCompareCallback(true);
-
     Order o1 = orderbook.createOrder(true, 10, 0, 100.4564);
-    orderbook.addLimitOrder(o1, bid_compare);
+    orderbook.addOrder(o1);
 
     ASSERT_EQ(orderbook.size(), 1);
     ASSERT_EQ(orderbook.inside_bid_price(), 10046);
@@ -115,11 +112,8 @@ TEST(OrderBookTest, TestOrderBookTickSize)
 {
     OrderBook orderbook{4};
 
-    function<bool(double, double)> bid_compare;
-    bid_compare = orderbook.buildCompareCallback(true);
-
     Order o1 = orderbook.createOrder(true, 10, 0, 100.4564);
-    orderbook.addLimitOrder(o1, bid_compare);
+    orderbook.addOrder(o1);
 
     ASSERT_EQ(orderbook.size(), 1);
     ASSERT_EQ(orderbook.inside_bid_price(), 1004564);
@@ -129,16 +123,13 @@ TEST(OrderBookTest, TestOrderBookBidCreate)
 {
     OrderBook orderbook;
 
-    function<bool(double, double)> bid_compare;
-    bid_compare = orderbook.buildCompareCallback(true);
-
     Order o1 = orderbook.createOrder(true, 1, 0, 80);
     Order o2 = orderbook.createOrder(true, 1, 0, 90);
     Order o3 = orderbook.createOrder(true, 1, 0, 100);
 
-    orderbook.addLimitOrder(o1, bid_compare);
-    orderbook.addLimitOrder(o2, bid_compare);
-    orderbook.addLimitOrder(o3, bid_compare);
+    orderbook.addOrder(o1);
+    orderbook.addOrder(o2);
+    orderbook.addOrder(o3);
 
     ASSERT_TRUE(orderbook.size() == 3);
     ASSERT_TRUE(orderbook.inside_bid_price() == 10000);
@@ -148,16 +139,13 @@ TEST(OrderBookTest, TestOrderBookAskCreate)
 {
     OrderBook orderbook;
 
-    function<bool(double, double)> ask_compare;
-    ask_compare = orderbook.buildCompareCallback(false);
-
     Order o1 = orderbook.createOrder(false, 1, 0, 80);
     Order o2 = orderbook.createOrder(false, 1, 0, 90);
     Order o3 = orderbook.createOrder(false, 1, 0, 100);
 
-    orderbook.addLimitOrder(o1, ask_compare);
-    orderbook.addLimitOrder(o2, ask_compare);
-    orderbook.addLimitOrder(o3, ask_compare);
+    orderbook.addOrder(o1);
+    orderbook.addOrder(o2);
+    orderbook.addOrder(o3);
 
     ASSERT_TRUE(orderbook.size() == 3);
     ASSERT_TRUE(orderbook.inside_ask_price() == 8000);
@@ -167,17 +155,12 @@ TEST(OrderBookTest, TestSingleBidAskExecute)
 {
     OrderBook orderbook;
 
-    function<bool(double, double)> bid_compare;
-    function<bool(double, double)> ask_compare;
-    ask_compare = orderbook.buildCompareCallback(false);
-    bid_compare = orderbook.buildCompareCallback(true);
-
     Order o1 = orderbook.createOrder(false, 10, 0, 100);
     Order o2 = orderbook.createOrder(true, 10, 0, 100);
 
     // test single bid-ask execution
-    orderbook.addLimitOrder(o1, ask_compare);
-    orderbook.addLimitOrder(o2, bid_compare);
+    orderbook.addOrder(o1);
+    orderbook.addOrder(o2);
 
     ASSERT_TRUE(orderbook.size() == 0);
     ASSERT_TRUE(orderbook.inside_bid_price() == 0);
@@ -188,19 +171,14 @@ TEST(OrderBookTest, TestMultipleAskBidExecute)
 {
     OrderBook orderbook;
 
-    function<bool(double, double)> bid_compare;
-    function<bool(double, double)> ask_compare;
-    ask_compare = orderbook.buildCompareCallback(false);
-    bid_compare = orderbook.buildCompareCallback(true);
-
     Order o1 = orderbook.createOrder(true, 20, 0, 100);
     Order o2 = orderbook.createOrder(false, 10, 0, 100);
     Order o3 = orderbook.createOrder(false, 10, 0, 100);
 
     // test multiple ask to bid execution
-    orderbook.addLimitOrder(o1, bid_compare);
-    orderbook.addLimitOrder(o2, ask_compare);
-    orderbook.addLimitOrder(o3, ask_compare);
+    orderbook.addOrder(o1);
+    orderbook.addOrder(o2);
+    orderbook.addOrder(o3);
 
     ASSERT_TRUE(orderbook.size() == 0);
     ASSERT_TRUE(orderbook.inside_bid_price() == 0);
@@ -211,19 +189,14 @@ TEST(OrderBookTest, TestMultipleBidAskExecute)
 {
     OrderBook orderbook;
 
-    function<bool(double, double)> bid_compare;
-    function<bool(double, double)> ask_compare;
-    ask_compare = orderbook.buildCompareCallback(false);
-    bid_compare = orderbook.buildCompareCallback(true);
-
     Order o1 = orderbook.createOrder(false, 20, 0, 100);
     Order o2 = orderbook.createOrder(true, 10, 0, 100);
     Order o3 = orderbook.createOrder(true, 10, 0, 100);
 
     // test multiple bid to ask execution
-    orderbook.addLimitOrder(o1, ask_compare);
-    orderbook.addLimitOrder(o2, bid_compare);
-    orderbook.addLimitOrder(o3, bid_compare);
+    orderbook.addOrder(o1);
+    orderbook.addOrder(o2);
+    orderbook.addOrder(o3);
 
     ASSERT_TRUE(orderbook.size() == 0);
     ASSERT_TRUE(orderbook.inside_bid_price() == 0);
@@ -234,17 +207,12 @@ TEST(OrderBookTest, TestPartialAskExecution)
 {
     OrderBook orderbook;
 
-    function<bool(double, double)> bid_compare;
-    function<bool(double, double)> ask_compare;
-    ask_compare = orderbook.buildCompareCallback(false);
-    bid_compare = orderbook.buildCompareCallback(true);
-
     Order o1 = orderbook.createOrder(false, 20, 0, 100);
     Order o2 = orderbook.createOrder(true, 10, 0, 100);
 
     // test partial ask execution
-    orderbook.addLimitOrder(o1, ask_compare);
-    orderbook.addLimitOrder(o2, bid_compare);
+    orderbook.addOrder(o1);
+    orderbook.addOrder(o2);
 
     ASSERT_EQ(orderbook.size(), 1);
     ASSERT_EQ(orderbook.inside_bid_price(), 0);
@@ -256,21 +224,16 @@ TEST(OrderBookTest, TestPartialBidExecution)
 {
     OrderBook orderbook;
 
-    function<bool(double, double)> bid_compare;
-    function<bool(double, double)> ask_compare;
-    ask_compare = orderbook.buildCompareCallback(false);
-    bid_compare = orderbook.buildCompareCallback(true);
-
     Order o1 = orderbook.createOrder(true, 10, 0, 80);
     Order o2 = orderbook.createOrder(true, 10, 0, 90);
     Order o3 = orderbook.createOrder(true, 15, 0, 90);
     Order o4 = orderbook.createOrder(false, 40, 0, 90);
 
     // test partial bid execution
-    orderbook.addLimitOrder(o1, bid_compare);
-    orderbook.addLimitOrder(o2, bid_compare);
-    orderbook.addLimitOrder(o3, bid_compare);
-    orderbook.addLimitOrder(o4, ask_compare);
+    orderbook.addOrder(o1);
+    orderbook.addOrder(o2);
+    orderbook.addOrder(o3);
+    orderbook.addOrder(o4);
 
     ASSERT_EQ(orderbook.size(), 2);
     ASSERT_EQ(orderbook.inside_bid_price(), 8000);
@@ -283,21 +246,16 @@ TEST(OrderBookTest, TestFilledOrderProperties)
 {
     OrderBook orderbook;
 
-    function<bool(double, double)> bid_compare;
-    function<bool(double, double)> ask_compare;
-    ask_compare = orderbook.buildCompareCallback(false);
-    bid_compare = orderbook.buildCompareCallback(true);
-
     Order o1 = orderbook.createOrder(true, 10, 0, 80);
     Order o2 = orderbook.createOrder(true, 10, 0, 90);
     Order o3 = orderbook.createOrder(true, 15, 0, 90);
     Order o4 = orderbook.createOrder(false, 40, 0, 90);
 
     // test order fill calculations
-    orderbook.addLimitOrder(o1, bid_compare);
-    orderbook.addLimitOrder(o2, bid_compare);
-    orderbook.addLimitOrder(o3, bid_compare);
-    orderbook.addLimitOrder(o4, ask_compare);
+    orderbook.addOrder(o1);
+    orderbook.addOrder(o2);
+    orderbook.addOrder(o3);
+    orderbook.addOrder(o4);
 
     ASSERT_EQ(orderbook.size(), 2);
     ASSERT_EQ(o4.open_quantity(), 15);

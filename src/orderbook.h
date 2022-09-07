@@ -35,16 +35,16 @@ public:
     * Creates an Order using timestamp as the id and adds to limit.
     * An associated Limit is created for the order if it doesn't already exist.
     */
-    virtual Order createOrder(bool is_bid, uint64_t quantity, uint64_t filled_quantity, double price);
-    virtual void addOrder(shared_ptr<Order> order);
-    virtual void removeOrder(shared_ptr<Order> order);
+    Order createOrder(bool is_bid, uint64_t quantity, uint64_t filled_quantity, double price);
 
     /*
      * Creates an Order and corresponding limit if necessary.
      * Attempts to fulfill incoming Order before creating limit order.
      * Returns Order id if limit order was created and 0 if fulfilled.
      */
-    void addLimitOrder(Order& order, std::function<bool(uint64_t, uint64_t)> compare);
+    void addOrder(Order& order);
+    void removeOrder(shared_ptr<Order> order);
+    Order& matchOrder(Limit* limit, unordered_map<uint, Limit> limit_map, Order& order);
 
     uint64_t sendMarketOrder(bool is_bid, uint quantity);
     uint64_t sendCancelOrder(uint64_t order_id);
