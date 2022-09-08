@@ -295,11 +295,11 @@ std::function<bool(uint64_t, uint64_t)> OrderBook::buildCompareCallback(bool is_
 {
     // default to compare function used for BID orders
     std::function<bool(uint64_t, uint64_t)> compare;
-    compare = [=](uint64_t first, uint64_t second) { return first <= second; };
+    compare = [](uint64_t first, uint64_t second) { return first <= second; };
 
     if (!is_bid)
     {
-        compare = [=](uint64_t first, uint64_t second) { return first >= second; };
+        compare = [](uint64_t first, uint64_t second) { return first >= second; };
     }
     return compare;
 }
