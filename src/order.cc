@@ -1,4 +1,5 @@
 #include <ostream>
+#include <iostream>
 
 #include "order.h"
 
@@ -92,6 +93,11 @@ void Order::fill(uint64_t fill_quantity, uint64_t cost, uint64_t fill_id)
 {
     _filled_quantity += fill_quantity;
     _filled_cost += cost;
+
+    // TODO: this should be emitted as an event
+    if (open_quantity() == 0) {
+        std::cout << *this;
+    }
 }
 
 uint64_t Order::open_quantity() const
