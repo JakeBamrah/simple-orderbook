@@ -18,11 +18,14 @@ using std::unordered_map;
 */
 class OrderBook {
 public:
+    typedef unordered_map<uint, Limit> LimitMap;
+    typedef std::function<bool(uint64_t, uint64_t)> CompareCallback;
+
     OrderBook();
     OrderBook(uint tick_size);
 
     /* Generates compare function based on QuoteType */
-    std::function<bool(uint64_t, uint64_t)> buildCompareCallback(bool is_bid);
+    CompareCallback buildCompareCallback(bool is_bid);
 
     /*
      * Price is assumed to be given as the tick size initially specified.
@@ -44,7 +47,7 @@ public:
      */
     void addOrder(Order& order);
     void removeOrder(shared_ptr<Order> order);
-    bool matchOrder(Limit* limit, unordered_map<uint, Limit> limit_map, Order& order);
+    bool matchOrder(Limit* limit, LimitMap limit_map, Order& order);
 
     uint64_t sendMarketOrder(bool is_bid, uint quantity);
     uint64_t sendCancelOrder(uint64_t order_id);
@@ -67,8 +70,8 @@ private:
     Limit& createAskLimit(uint64_t price);
     Limit& getLimit(bool is_bid, uint64_t price);
 
-    unordered_map<uint, Limit> ask_limit_map;
-    unordered_map<uint, Limit> bid_limit_map;
+    LimitMap ask_limit_map;
+    LimitMap bid_limit_map;
 
     /* Use price to access limit directly via limit map */
     Limit* lowest_ask_limit{nullptr};

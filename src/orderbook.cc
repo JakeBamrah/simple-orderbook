@@ -192,10 +192,10 @@ void OrderBook::removeOrder(shared_ptr<Order> order)
     return;
 }
 
-bool OrderBook::matchOrder(Limit* limit, unordered_map<uint, Limit> limit_map, Order& order)
+bool OrderBook::matchOrder(Limit* limit, LimitMap limit_map, Order& order)
 {
     // iterate through best price limit and match orders with new order
-    std::function<bool(uint64_t, uint64_t)> compare = buildCompareCallback(order.is_bid());
+    CompareCallback compare = buildCompareCallback(order.is_bid());
     while (limit != nullptr && compare(limit->price(), order.price()))
     {
         if (order.open_quantity() == 0)
@@ -256,7 +256,7 @@ void OrderBook::addOrder(Order& order)
 {
     // find best priced limit—assume / default new order as a bid
     // NOTE: limit must be the opposite side of incoming order to match orders
-    auto limit_map = ask_limit_map;
+    LimitMap limit_map = ask_limit_map;
     Limit* best_limit = lowest_ask_limit;
     if (!order.is_bid())
     {
@@ -287,16 +287,14 @@ void OrderBook::addOrder(Order& order)
 }
 
 
-std::function<bool(uint64_t, uint64_t)> OrderBook::buildCompareCallback(bool is_bid)
+OrderBook::CompareCallback OrderBook::buildCompareCallback(bool is_bid)
 {
     // default to compare function used for BID orders
-    std::function<bool(uint64_t, uint64_t)> compare;
-    compare = [](uint64_t first, uint64_t second) { return first <= second; };
-
-    if (!is_bid)
+    CompareCallback compare = [=](uint64_t first, uint64_t second)
     {
-        compare = [](uint64_t first, uint64_t second) { return first >= second; };
-    }
+        return is_bid ? first <= second : first >= second;
+    };
+
     return compare;
 }
 
