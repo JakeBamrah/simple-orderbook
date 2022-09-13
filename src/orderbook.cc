@@ -87,8 +87,7 @@ double OrderBook::inside_ask_quantity() const
 
 Limit& OrderBook::createBidLimit(uint64_t price)
 {
-    bid_limit_map[price] = Limit{price};
-    Limit& limit = bid_limit_map[price];
+    Limit& limit = bid_limit_map[price] = Limit{price};
     if (highest_bid_limit == nullptr)
     {
         highest_bid_limit = &limit;
@@ -114,8 +113,7 @@ Limit& OrderBook::createBidLimit(uint64_t price)
 
 Limit& OrderBook::createAskLimit(uint64_t price)
 {
-    ask_limit_map[price] = Limit{price};
-    Limit& limit = ask_limit_map[price];
+    Limit& limit = ask_limit_map[price] = Limit{price};
     if (lowest_ask_limit == nullptr)
     {
         lowest_ask_limit = &limit;
@@ -145,16 +143,14 @@ Limit& OrderBook::getLimit(bool is_bid, uint64_t price)
     {
         if (bid_limit_map.find(price) == bid_limit_map.end())
         {
-            Limit& limit = createBidLimit(price);
-            bid_limit_map[price] = limit;
+            createBidLimit(price);
         }
 
         return bid_limit_map.at(price);
     } else {
         if (ask_limit_map.find(price) == ask_limit_map.end())
         {
-            Limit& limit = createAskLimit(price);
-            ask_limit_map[price] = limit;
+            createAskLimit(price);
         }
 
         return ask_limit_map.at(price);
